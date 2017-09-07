@@ -17,4 +17,4 @@ THIS_DIR=$(dirname $(realpath $0))
 
 # Example: A python script called compile.py in this directory is passed
 # the arguments that are passed to this script.
-python ${THIS_DIR}/compile.py $*
+python2 ${THIS_DIR}/compile.py $*
