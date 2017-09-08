@@ -138,45 +138,47 @@ def printLinkedList(node):
 def createAssembly(targetFile, flatAst):
 	with open(targetFile, "w") as outputFile:
 		node = flatAst
+		outputFile.write(".globl main\n")
+		outputFile.write("main:\n")
 		while node != None:
 			if node.operation == "FunctionStart":
-				outputFile.write("pushl %ebp\n")
-				outputFile.write("movl %esp, %ebp\n")
-				outputFile.write("subl $" + str(node.input1* 4) + ", %esp\n")
+				outputFile.write("\tpushl %ebp\n")
+				outputFile.write("\tmovl %esp, %ebp\n")
+				outputFile.write("\tsubl $" + str(node.input1* 4) + ", %esp\n")
 			elif node.operation == "FunctionEnd":
-				outputFile.write("addl $" + str(node.input1* 4) + ", %esp\n")
-				outputFile.write("movl $0, %eax\n")
-				outputFile.write("leave\n")
-				outputFile.write("ret\n")
+				outputFile.write("\taddl $" + str(node.input1* 4) + ", %esp\n")
+				outputFile.write("\tmovl $0, %eax\n")
+				outputFile.write("\tleave\n")
+				outputFile.write("\tret\n")
 			elif node.operation == "Print":
-				outputFile.write("pushl %eax\n")
-				outputFile.write("call print_int_nl\n")
+				outputFile.write("\tpushl %eax\n")
+				outputFile.write("\tcall print_int_nl\n")
 			elif node.operation == "Assign":
 				if isinstance(node.input1, Var):
-					outputFile.write("movl -" + str((node.input1.name+1)*4) + "(%ebp), %eax\n")
-					outputFile.write("movl %eax, -" + str((node.output.name+1)*4) + "(%ebp)\n")
+					outputFile.write("\tmovl -" + str((node.input1.name+1)*4) + "(%ebp), %eax\n")
+					outputFile.write("\tmovl %eax, -" + str((node.output.name+1)*4) + "(%ebp)\n")
 				else:
-					outputFile.write("movl $" + str(node.input1) + ", -" + str((node.output.name+1)*4) + "(%ebp)\n")
+					outputFile.write("\tmovl $" + str(node.input1) + ", -" + str((node.output.name+1)*4) + "(%ebp)\n")
 			elif node.operation == "Add":
 				if isinstance(node.input1, Var):
-					outputFile.write("movl -" + str((node.input1.name+1)*4) + "(%ebp), %eax\n")
+					outputFile.write("\tmovl -" + str((node.input1.name+1)*4) + "(%ebp), %eax\n")
 				else:
-					outputFile.write("movl $" + str(node.input1) + ", %eax\n")
+					outputFile.write("\tmovl $" + str(node.input1) + ", %eax\n")
 				if isinstance(node.input2, Var):
-					outputFile.write("addl -" + str((node.input2.name+1)*4) + "(%ebp), %eax\n")
+					outputFile.write("\taddl -" + str((node.input2.name+1)*4) + "(%ebp), %eax\n")
 				else:
-					outputFile.write("addl $" + str(node.input2) + ", %eax\n")
-				outputFile.write("movl %eax, -" + str((node.output.name+1)*4) + "(%ebp)\n")
+					outputFile.write("\taddl $" + str(node.input2) + ", %eax\n")
+				outputFile.write("\tmovl %eax, -" + str((node.output.name+1)*4) + "(%ebp)\n")
 			elif node.operation == "Neg":
 				if isinstance(node.input1, Var):
-					outputFile.write("movl -" + str((node.input1.name+1)*4) + "(%ebp), %eax\n")
+					outputFile.write("\tmovl -" + str((node.input1.name+1)*4) + "(%ebp), %eax\n")
 				else:
-					outputFile.write("movl $" + str(node.input1) + ", %eax\n")
-				outputFile.write("negl %eax\n")
-				outputFile.write("movl %eax, -" + str((node.output.name+1)*4) + "(%ebp)\n")
+					outputFile.write("\tmovl $" + str(node.input1) + ", %eax\n")
+				outputFile.write("\tnegl %eax\n")
+				outputFile.write("\tmovl %eax, -" + str((node.output.name+1)*4) + "(%ebp)\n")
 			elif node.operation == "Input":
-				outputFile.write("call input\n")
-				outputFile.write("movl %eax, -" + str((node.output.name+1)*4) + "(%ebp)\n")
+				outputFile.write("\tcall input\n")
+				outputFile.write("\tmovl %eax, -" + str((node.output.name+1)*4) + "(%ebp)\n")
 			else:
 				raise Exception("No flatAST match: " + str(node))
 			
