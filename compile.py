@@ -139,18 +139,40 @@ def createAssembly(targetFile, flatAst):
 	with open(targetFile, "w") as outputFile:
 		node = flatAst
 		while node != None:
-			if node.operation == "":
-				
-			elif node.operation == "":
-				
+			if node.operation == "FunctionStart":
+				outputFile.write("pushl %ebp\n")
+				outputFile.write("movl %esp, %ebp\n")
+				outputFile.write("subl $" + str(node.input1* 4) + ", %esp\n")
+			elif node.operation == "FunctionEnd":
+				outputFile.write("addl $" + str(node.input1* 4) + ", %esp\n")
+				outputFile.write("movl $0, %eax\n")
+				outputFile.write("leave\n")
+				outputFile.write("ret\n")
+			elif node.operation == "Print":
+				outputFile.write("")
+				#raise Exception("Not yet Implemented")
+			elif node.operation == "Assign":
+				outputFile.write("")
+				#raise Exception("Not yet Implemented")
+			elif node.operation == "Add":
+				outputFile.write("")
+				#raise Exception("Not yet Implemented")
+			elif node.operation == "Neg":
+				outputFile.write("")
+				#raise Exception("Not yet Implemented")
+			elif node.operation == "Input":
+				outputFile.write("")
+				#raise Exception("Not yet Implemented")
 			else:
 				raise Exception("No flatAST match: " + str(node))
 			
 			node = node.next
+		outputFile.close()
 
 def main():
 	with open(sys.argv[1], "r") as inputFile:
 		ast = compiler.parse(inputFile.read())
+		inputFile.close()
 		print ast
 		flatAst = flatten(ast)
 		printLinkedList(flatAst)
