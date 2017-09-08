@@ -81,8 +81,8 @@ def flattenRecurs(ast, variables):
 	elif isinstance(ast, Const):
 		return None, ast.value
 	elif isinstance(ast, Name):
-		for i in variables.values():
-			if i == ast.name:
+		for i in variables:
+			if variables[i] == ast.name:
 				return None, i
 	elif isinstance(ast, Add):
 		leftTuple = flattenRecurs(ast.left, variables)
@@ -149,20 +149,34 @@ def createAssembly(targetFile, flatAst):
 				outputFile.write("leave\n")
 				outputFile.write("ret\n")
 			elif node.operation == "Print":
-				outputFile.write("")
-				#raise Exception("Not yet Implemented")
+				outputFile.write("pushl %eax\n")
+				outputFile.write("call print_int_nl\n")
 			elif node.operation == "Assign":
-				outputFile.write("")
-				#raise Exception("Not yet Implemented")
+				if isinstance(node.input1, Var):
+					outputFile.write("movl -" + str((node.input1.name+1)*4) + "(%ebp), %eax\n")
+					outputFile.write("movl %eax, -" + str((node.output.name+1)*4) + "(%ebp)\n")
+				else:
+					outputFile.write("movl $" + str(node.input1) + ", -" + str((node.output.name+1)*4) + "(%ebp)\n")
 			elif node.operation == "Add":
-				outputFile.write("")
-				#raise Exception("Not yet Implemented")
+				if isinstance(node.input1, Var):
+					outputFile.write("movl -" + str((node.input1.name+1)*4) + "(%ebp), %eax\n")
+				else:
+					outputFile.write("movl $" + str(node.input1) + ", %eax\n")
+				if isinstance(node.input2, Var):
+					outputFile.write("addl -" + str((node.input2.name+1)*4) + "(%ebp), %eax\n")
+				else:
+					outputFile.write("addl $" + str(node.input2) + ", %eax\n")
+				outputFile.write("movl %eax, -" + str((node.output.name+1)*4) + "(%ebp)\n")
 			elif node.operation == "Neg":
-				outputFile.write("")
-				#raise Exception("Not yet Implemented")
+				if isinstance(node.input1, Var):
+					outputFile.write("movl -" + str((node.input1.name+1)*4) + "(%ebp), %eax\n")
+				else:
+					outputFile.write("movl $" + str(node.input1) + ", %eax\n")
+				outputFile.write("negl %eax\n")
+				outputFile.write("movl %eax, -" + str((node.output.name+1)*4) + "(%ebp)\n")
 			elif node.operation == "Input":
-				outputFile.write("")
-				#raise Exception("Not yet Implemented")
+				outputFile.write("call input\n")
+				outputFile.write("movl %eax, -" + str((node.output.name+1)*4) + "(%ebp)\n")
 			else:
 				raise Exception("No flatAST match: " + str(node))
 			
