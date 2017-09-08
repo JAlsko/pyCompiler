@@ -151,6 +151,10 @@ def createAssembly(targetFile, flatAst):
 				outputFile.write("\tleave\n")
 				outputFile.write("\tret\n")
 			elif node.operation == "Print":
+				if isinstance(node.input1, Var):
+					outputFile.write("\tmovl -" + str((node.input1.name+1)*4) + "(%ebp), %eax\n")
+				else:
+					outputFile.write("\tmovl $" + str(node.input1) + ", %eax\n")
 				outputFile.write("\tpushl %eax\n")
 				outputFile.write("\tcall print_int_nl\n")
 			elif node.operation == "Assign":
