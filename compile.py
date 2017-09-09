@@ -146,7 +146,7 @@ def createAssembly(targetFile, flatAst):
 				outputFile.write("\tmovl %esp, %ebp\n")
 				outputFile.write("\tsubl $" + str(node.input1* 4) + ", %esp\n")
 			elif node.operation == "FunctionEnd":
-				outputFile.write("\taddl $" + str(node.input1* 4) + ", %esp\n")
+				#outputFile.write("\taddl $" + str(node.input1* 4) + ", %esp\n")
 				outputFile.write("\tmovl $0, %eax\n")
 				outputFile.write("\tleave\n")
 				outputFile.write("\tret\n")
@@ -157,6 +157,7 @@ def createAssembly(targetFile, flatAst):
 					outputFile.write("\tmovl $" + str(node.input1) + ", %eax\n")
 				outputFile.write("\tpushl %eax\n")
 				outputFile.write("\tcall print_int_nl\n")
+				outputFile.write("\taddl $4, %esp\n")
 			elif node.operation == "Assign":
 				if isinstance(node.input1, Var):
 					outputFile.write("\tmovl -" + str((node.input1.name+1)*4) + "(%ebp), %eax\n")
@@ -196,8 +197,6 @@ def main():
 		print ast
 		flatAst = flatten(ast)
 		printLinkedList(flatAst)
-		print sys.argv[1]
-		print sys.argv[1][:-2] + "s"
 		createAssembly(sys.argv[1][:-2] + "s", flatAst)
 		
 		
