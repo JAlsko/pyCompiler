@@ -194,9 +194,20 @@ def createAssembly(targetFile, flatAst):
 
 def main():
 	with open(sys.argv[1], "r") as inputFile:
-		tokens = ('PRINT','INT','PLUS')
+		reserved = {'print' : 'PRINT', 'input()' : 'INPUT'}
+		tokens = ['INT','PLUS','ASSIGN','PAREN_START','PAREN_END','NEG','ID'] + list(reserved.values())
 		t_PRINT = r'print'
 		t_PLUS = r'\+'
+		t_NEG = r'\-'
+		t_ASSIGN = r'='
+		t_INPUT = r'input\(\)'
+		t_PAREN_START = r'\('
+		t_PAREN_END = r'\)'
+		#t_VAR = r'[a-zA-Z_][a-zA-Z0-9_]*'
+		def t_ID(t):
+			r'[a-zA-Z_][a-zA-Z_0-9]*'
+			t.type = reserved.get(t.value,'ID')
+			return t
 		def t_INT(t):
 			r'\d+'
 			try:
@@ -212,7 +223,10 @@ def main():
 		def t_error(t):
 			print "Illegal character '%s'" % t.value[0]
 			t.lexer.skip(1)
-		lex.lex()
+		myLexer = lex.lex()
+		myLexer.input(inputFile.read())
+		for token in myLexer:
+			print token
 		# Parser
 		from compiler.ast import Printnl, Add, Const
 		precedence = (
@@ -230,7 +244,14 @@ def main():
 			t[0] = Const(t[1])
 		def p_error(t):
 			print "Syntax error at '%s'" % t.value
-		yacc.yacc()
+		parser = yacc.yacc()
+		#print parser.parse(lexer=myLexer)
+		'''
+		for token in lexer:
+			print token
+			result = parser.parse(token)
+			print result
+			'''
 		'''
 		#ast = compiler.parse(inputFile.read())
 		inputFile.close()
