@@ -206,7 +206,7 @@ def parse(input):
 	t_INPUT = r'input'
 	t_PAREN_START = r'\('
 	t_PAREN_END = r'\)'
-	t_NEW_LINE = r'\n'
+	t_NEW_LINE = r'\n|;'
 	#t_VAR = r'[a-zA-Z_][a-zA-Z0-9_]*'
 	def t_NAME(t):
 		r'[a-zA-Z_][a-zA-Z_0-9]*'
