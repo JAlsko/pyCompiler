@@ -242,6 +242,9 @@ def parse(input):
 	def p_module_module(t):
 		'module : statement_list'
 		t[0] = Module(None, Stmt(t[1]))
+#	def p_module_new_line(t):
+#		'module : new_line statement_list'
+#		t[0] = Module(None, Stmt(t[1]))
 	def p_newline_statement(t):
 		'statement_list : statement_list new_line statement'
 		t[0] = t[1]
