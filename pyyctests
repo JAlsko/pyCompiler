@@ -17,23 +17,24 @@ THIS_DIR=$(dirname $(realpath $0))
 
 # Example: A python script called compile.py in this directory is passed
 # the arguments that are passed to this script.
-for FILE in ${THIS_DIR}/tests/*
+MIN=$2
+MAX=$3
+I=0
+
+for FILE in ${THIS_DIR}/$1/*
 do
 	if [[ $FILE == *.py ]]
 	then
-		python2 ${THIS_DIR}/compile.py "$FILE"
-		NEWFILE=${FILE%.py}
-		cat "$NEWFILE".in | python2 "$FILE" > "$NEWFILE"_correct.out
-	fi
-done
-
-for FILE in ${THIS_DIR}/tests/*
-do
-	if [[ $FILE == *.s ]]
-	then
-		NEWFILE=${FILE%.s}
-		gcc -m32 -g $FILE runtime/libpyyruntime.a -o $NEWFILE
-		cat "$NEWFILE".in | $NEWFILE > "$NEWFILE".out
-		diff "$NEWFILE"_correct.out "$NEWFILE".out
+		if [ "$I" -le "$MAX" ] && [ "$I" -ge "$MIN" ]
+		then
+			printf "\n\n\n$FILE:\n$I\n\n"
+			python2 ${THIS_DIR}/compile.py "$FILE"
+			NEWFILE=${FILE%.py}
+			cat "$NEWFILE".in | python2 "$FILE" > "$NEWFILE"_correct.out
+			gcc -m32 -g "$NEWFILE".s runtime/libpyyruntime.a -o $NEWFILE
+			cat "$NEWFILE".in | $NEWFILE > "$NEWFILE".out
+			diff "$NEWFILE"_correct.out "$NEWFILE".out
+		fi
+		let "I++"
 	fi
 done

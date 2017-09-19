@@ -24,8 +24,9 @@ class Var():
 		return "Var(" + str(self.name) + ")"
 
 def getLast(node):
-	while node.next != None:
-		node = node.next
+	if node != None:
+		while node.next != None:
+			node = node.next
 	return node
 	
 def newVariable(variables, name):
@@ -45,15 +46,18 @@ def flattenRecurs(ast, variables):
 		last = None
 		for statement in ast.nodes:
 			result = flattenRecurs(statement, variables)
-			if first == None:
-				first = result
-				last = getLast(first)
-			else:
-				last.next = result
-				result.prev = last
-				last = getLast(last)
-		last.next = flatNode("FunctionEnd", None, last, None, len(variables), None)
-		return flatNode("FunctionStart", first, None, None, len(variables), None)
+			if result != None:
+				if first == None:	
+					first = result
+					last = getLast(first)
+				else:
+					last.next = result
+					result.prev = last
+					last = getLast(last)
+		if last != None:
+			last.next = flatNode("FunctionEnd", None, last, None, len(variables), None)
+			return flatNode("FunctionStart", first, None, None, len(variables), None)
+		return flatNode("FunctionStart", flatNode("FunctionEnd", None, None, None, len(variables), None), None, None, len(variables), None)
 	elif isinstance(ast, Printnl):
 		result = flattenRecurs(ast.nodes[0], variables)
 		if result[0] == None:
