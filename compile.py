@@ -237,28 +237,24 @@ def parse(input):
 	from compiler.ast import Printnl, Add, Const, UnarySub, Name, Assign, AssName, CallFunc
 	precedence = (
 		('nonassoc','PRINT'),
-		('left','PLUS', 'NEG')
+		('left','PLUS', 'NEG', 'NEW_LINE')
 		)
 	def p_module_module(t):
 		'module : statement_list'
-		t[0] = Module(None, Stmt(t[1]))
-#	def p_module_new_line(t):
-#		'module : new_line statement_list'
-#		t[0] = Module(None, Stmt(t[1]))
+		stmt = []
+		for i in t[1]:
+			if i != None:
+				stmt.append(i)
+		t[0] = Module(None, Stmt(stmt))
 	def p_newline_statement(t):
-		'statement_list : statement_list new_line statement'
+		'statement_list : statement_list NEW_LINE statement'
 		t[0] = t[1]
 		t[0].append(t[3])
 	def p_statement_list(t):
 		'statement_list : statement'
 		t[0] = [t[1]]
-	def p_trailing_new_line(t):
-		'statement_list : statement_list new_line'
-		t[0] = t[1]
-	def p_new_line_single(t):
-		'new_line : NEW_LINE'
-	def p_new_line_repeat(t):
-		'new_line : new_line NEW_LINE'
+	def p_empty_statement(t):
+		'statement : '
 	def p_print_statement(t):
 		'statement : PRINT expression'
 		t[0] = Printnl([t[2]], None)
@@ -294,9 +290,8 @@ def parse(input):
 def main():
 	with open(sys.argv[1], "r") as inputFile:
 		program = inputFile.read()
-		#print compiler.parse(program)
+		print compiler.parse(program)
 		ast = parse(program)
-		#print ast
 		
 
 		#ast = compiler.parse(inputFile.read())
