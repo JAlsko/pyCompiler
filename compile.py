@@ -290,7 +290,7 @@ def parse(input):
 def main():
 	with open(sys.argv[1], "r") as inputFile:
 		program = inputFile.read()
-		print compiler.parse(program)
+		#print compiler.parse(program)
 		ast = parse(program)
 		
 
