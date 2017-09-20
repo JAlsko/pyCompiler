@@ -198,7 +198,7 @@ def createAssembly(targetFile, flatAst):
 
 def parse(input):
 	reserved = {'print' : 'PRINT', 'input' : 'INPUT'}
-	tokens = ['INT','PLUS','ASSIGN','PAREN_START','PAREN_END','NEG','NAME','NEW_LINE'] + list(reserved.values())
+	tokens = ['INT','PLUS','ASSIGN','PAREN_START','PAREN_END','NEG','NAME','NEW_LINE','COMMENT'] + list(reserved.values())
 	t_PRINT = r'print'
 	t_PLUS = r'\+'
 	t_NEG = r'\-'
@@ -220,6 +220,9 @@ def parse(input):
 			print "integer value too large", t.value
 			t.value = 0
 		return t
+	def t_COMMENT(t):
+		r'\#.*'
+		pass
 	t_ignore  = ' \t'
 	'''
 	def t_newline(t):
