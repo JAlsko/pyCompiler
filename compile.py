@@ -6,6 +6,8 @@ import src.flatten as flatten
 import src.parse as parse
 import src.flatPyToX86IR as tox86IR
 import src.liveness as liveness
+import src.graph as graph
+import pprint
 
 def main():
 	with open(sys.argv[1], "r") as inputFile:
@@ -17,7 +19,7 @@ def main():
 		#ast = compile.parse(program)
 		if '-ast' in sys.argv:
 			print ast
-		flatAst = flatten.flatten(ast)
+		flatAst, variables = flatten.flatten(ast)
 		if '-flatpy' in sys.argv:
 			structs.printLinkedList(flatAst)
 		flatAssem = tox86IR.createAssembly(flatAst)
@@ -26,5 +28,8 @@ def main():
 		liveness.setLiveness(flatAssem)
 		if '-liveness' in sys.argv:
 			structs.printLinkedList(flatAssem)
+		nodeGraph = graph.createGraph(flatAssem, variables)
+		if '-graph':
+			print structs.dictToStr(nodeGraph)
 		
 main()

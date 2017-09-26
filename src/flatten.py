@@ -108,5 +108,5 @@ def flattenRecurs(ast, variables):
 	
 def flatten(ast):
 	variables = {}
-	return flattenRecurs(ast, variables)
+	return (flattenRecurs(ast, variables), variables)
 

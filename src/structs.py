@@ -16,6 +16,14 @@ class Var():
 		self.name = _name
 	def __str__(self):
 		return "Var(" + str(self.name) + ")"
+
+class Esp():
+	def __init__(self):
+		pass
+	def __str__(self):
+		return "%esp"
+
+
 		
 class x86IRNode():
 	def __init__(self, _operation, _var1, _var2, _prev, _next):
@@ -63,4 +71,16 @@ def setToStr(set):
 			string += ", "
 		string += str(i)
 	string += ")"
+	return string
+
+def dictToStr(dict):
+	string = "{"
+	first = True
+	for i in dict:
+		if first:
+			first = False
+		else:
+			string += ", "
+		string += str(i) + " : " + str(dict[i])
+	string += "}"
 	return string
