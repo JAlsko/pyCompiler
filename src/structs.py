@@ -1,3 +1,5 @@
+import pprint
+
 class flatNode():
 	def __init__(self, _operation, _next, _prev, _output, _input1, _input2):
 		self.operation = _operation
@@ -22,14 +24,16 @@ class x86IRNode():
 		self.prev = _prev
 		self.var1 = _var1
 		self.var2 = _var2
+		self.liveness = set([])
 	def __init__(self, _operation, _var1, _var2):
 		self.operation = _operation
 		self.var1 = _var1
 		self.var2 = _var2
 		self.next = None
 		self.prev = None
+		self.liveness = set([])
 	def __str__(self):
-		return "(" + str(self.operation) + ", " + str(self.var1) + ", " + str(self.var2) + ")"
+		return "(" + str(self.operation) + ", " + str(self.var1) + ", " + str(self.var2) + ", " + setToStr(self.liveness) + ")"
 
 
 def printLinkedList(node):
@@ -48,3 +52,15 @@ def getFirst(node):
 		while node.prev != None:
 			node = node.prev
 	return node
+
+def setToStr(set):
+	string = "Set("
+	first = True
+	for i in set:
+		if first:
+			first = False
+		else:
+			string += ", "
+		string += str(i)
+	string += ")"
+	return string

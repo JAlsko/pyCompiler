@@ -26,7 +26,7 @@ def createAssembly(flatAst):
 			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
 			last = addInstruction(last, structs.x86IRNode("negl", node.output, None))
 		elif node.operation == "Input":
-			last = addInstruction(last, structs.x86IRNode("call input", None, None))
+			last = addInstruction(last, structs.x86IRNode("call input", node.input1, None))
 		else:
 			raise Exception("No flatAST match: " + str(node))
 		node = node.next
