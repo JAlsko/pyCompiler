@@ -81,6 +81,15 @@ def dictToStr(dict):
 			first = False
 		else:
 			string += ", "
-		string += str(i) + " : " + str(dict[i])
+		string += str(i) + " : " + str(dict[i]) + "\n"
 	string += "}"
 	return string
+
+def newVariable(variables, name):
+	if name != None:
+		for i in variables:
+			if name == variables[i]:
+				return i
+	ret = structs.Var(str(len(variables)))
+	variables[ret] = name
+	return ret

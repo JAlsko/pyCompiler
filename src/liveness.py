@@ -8,19 +8,19 @@ def setLiveness(flatAssem):
 
 		if working.operation == "movl":
 			if isinstance(working.var2, structs.Var):
-				liveNow.discard(working.var2)
+				liveNow.discard(working.var2.name)
 			if isinstance(working.var1, structs.Var):
-				liveNow.add(working.var1)
+				liveNow.add(working.var1.name)
 		elif working.operation == "call":
-			liveNow.discard(structs.Var("eax"))
-			liveNow.discard(structs.Var("ecx"))
-			liveNow.discard(structs.Var("edx"))
+			liveNow.discard("eax")
+			liveNow.discard("ecx")
+			liveNow.discard("edx")
 		elif working.operation == "addl":
 			if isinstance(working.var1, structs.Var):
-				liveNow.add(working.var1)
+				liveNow.add(working.var1.name)
 		elif working.operation == "pushl":
 			if isinstance(working.var1, structs.Var):
-				liveNow.add(working.var1)
+				liveNow.add(working.var1.name)
 		elif working.operation == "negl":
 			pass
 		else:

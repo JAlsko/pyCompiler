@@ -8,7 +8,7 @@ def newVariable(variables, name):
 		for i in variables:
 			if name == variables[i]:
 				return i
-	ret = structs.Var(len(variables))
+	ret = structs.Var(str(len(variables)))
 	variables[ret] = name
 	return ret
 

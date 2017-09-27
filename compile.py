@@ -7,6 +7,8 @@ import src.parse as parse
 import src.flatPyToX86IR as tox86IR
 import src.liveness as liveness
 import src.graph as graph
+import src.spill as spill
+import src.printAssembly as printAssem
 import pprint
 
 def main():
@@ -25,11 +27,24 @@ def main():
 		flatAssem = tox86IR.createAssembly(flatAst)
 		if '-flatassem' in sys.argv:
 			structs.printLinkedList(flatAssem)
-		liveness.setLiveness(flatAssem)
-		if '-liveness' in sys.argv:
-			structs.printLinkedList(flatAssem)
-		nodeGraph = graph.createGraph(flatAssem, variables)
-		if '-graph':
-			print structs.dictToStr(nodeGraph)
+		unspillable = []
+		while True:
+			liveness.setLiveness(flatAssem)
+			if '-liveness' in sys.argv:
+				structs.printLinkedList(flatAssem)
+			nodeGraph = graph.createGraph(flatAssem, variables, unspillable)
+			if '-graph' in sys.argv:
+				print structs.dictToStr(nodeGraph)
+			graph.colorGraph(nodeGraph)
+			if '-colors' in sys.argv:
+				print structs.dictToStr(nodeGraph)
+			(flatAssem, new_unspillable) = spill.checkSpills(flatAssem, nodeGraph, variables)
+			if '-spills' in sys.argv:
+				print new_unspillable
+			if not new_unspillable:
+				break;
+			unspillable.extend(new_unspillable)
+		printAssem.createAssembly(sys.argv[1][:-2] + "s", flatAssem, nodeGraph)
+
 		
 main()
