@@ -28,6 +28,9 @@ def parse(input):
 			print "integer value too large", t.value
 			t.value = 0
 		return t
+	def t_COMMENT(t):
+		r'\#.*'
+		pass
 	t_ignore  = ' \t'
 	'''
 	def t_newline(t):
@@ -51,19 +54,14 @@ def parse(input):
 		'module : statement_list'
 		t[0] = Module(None, Stmt(t[1]))
 	def p_newline_statement(t):
-		'statement_list : statement_list new_line statement'
+		'statement_list : statement_list NEW_LINE statement'
 		t[0] = t[1]
 		t[0].append(t[3])
 	def p_statement_list(t):
 		'statement_list : statement'
 		t[0] = [t[1]]
-	def p_trailing_new_line(t):
-		'statement_list : statement_list new_line'
-		t[0] = t[1]
-	def p_new_line_single(t):
-		'new_line : NEW_LINE'
-	def p_new_line_repeat(t):
-		'new_line : new_line NEW_LINE'
+	def p_empty_statement(t):
+		'statement : '
 	def p_print_statement(t):
 		'statement : PRINT expression'
 		t[0] = Printnl([t[2]], None)
