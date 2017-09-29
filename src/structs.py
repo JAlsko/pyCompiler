@@ -26,6 +26,7 @@ class Esp():
 
 		
 class x86IRNode():
+	'''
 	def __init__(self, _operation, _var1, _var2, _prev, _next):
 		self.operation = _operation
 		self.next = _next
@@ -33,6 +34,7 @@ class x86IRNode():
 		self.var1 = _var1
 		self.var2 = _var2
 		self.liveness = set([])
+		'''
 	def __init__(self, _operation, _var1, _var2):
 		self.operation = _operation
 		self.var1 = _var1
@@ -90,6 +92,6 @@ def newVariable(variables, name):
 		for i in variables:
 			if name == variables[i]:
 				return i
-	ret = structs.Var(str(len(variables)))
+	ret = Var(str(len(variables)))
 	variables[ret] = name
 	return ret

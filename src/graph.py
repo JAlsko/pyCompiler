@@ -38,7 +38,7 @@ def createGraph(x86IR, variables, unspillable):
 			if isinstance(working.var1, structs.Var):
 				for var in working.liveness:
 					if not (working.var1.name == var):
-						nodes[working.var1].edges.add(var)
+						nodes[working.var1.name].edges.add(var)
 						nodes[var].edges.add(working.var1.name)
 		elif working.operation == "call":
 			for var in working.liveness:

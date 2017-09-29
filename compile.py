@@ -27,6 +27,8 @@ def main():
 		flatAssem = tox86IR.createAssembly(flatAst)
 		if '-flatassem' in sys.argv:
 			structs.printLinkedList(flatAssem)
+		if '-vars' in sys.argv:
+			print structs.setToStr(variables)
 		unspillable = []
 		while True:
 			liveness.setLiveness(flatAssem)
@@ -40,7 +42,7 @@ def main():
 				print structs.dictToStr(nodeGraph)
 			(flatAssem, new_unspillable) = spill.checkSpills(flatAssem, nodeGraph, variables)
 			if '-spills' in sys.argv:
-				print new_unspillable
+				print structs.setToStr(new_unspillable)
 			if not new_unspillable:
 				break;
 			unspillable.extend(new_unspillable)
