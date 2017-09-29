@@ -81,3 +81,4 @@ def colorGraph(nodes):
 		if next_node == None:
 			break
 		saturate(nodes[next_node], color(nodes[next_node].saturation, colors), nodes)
+	return len(colors) - 6

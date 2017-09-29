@@ -35,7 +35,7 @@ def main():
 			nodeGraph = graph.createGraph(flatAssem, variables, unspillable)
 			if '-graph' in sys.argv:
 				print structs.dictToStr(nodeGraph)
-			graph.colorGraph(nodeGraph)
+			numColors = graph.colorGraph(nodeGraph)
 			if '-colors' in sys.argv:
 				print structs.dictToStr(nodeGraph)
 			(flatAssem, new_unspillable) = spill.checkSpills(flatAssem, nodeGraph, variables)
@@ -44,7 +44,7 @@ def main():
 			if not new_unspillable:
 				break;
 			unspillable.extend(new_unspillable)
-		printAssem.createAssembly(sys.argv[1][:-2] + "s", flatAssem, nodeGraph)
+		printAssem.createAssembly(sys.argv[1][:-2] + "s", flatAssem, nodeGraph, numColors)
 
 		
 main()

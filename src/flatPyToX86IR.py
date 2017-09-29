@@ -17,7 +17,7 @@ def createAssembly(flatAst):
 			pass
 		elif node.operation == "Print":
 			last = addInstruction(last, structs.x86IRNode("pushl", node.input1, None))
-			last = addInstruction(last, structs.x86IRNode("call", "print", None))
+			last = addInstruction(last, structs.x86IRNode("call", "print_int_nl", None))
 			last = addInstruction(last, structs.x86IRNode("addl", 4, structs.Esp()))
 		elif node.operation == "Assign":
 			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))

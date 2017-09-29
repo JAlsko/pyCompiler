@@ -5,9 +5,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'nonassocPRINTleftPLUSNEGINT PLUS ASSIGN PAREN_START PAREN_END NEG NAME NEW_LINE PRINT INPUTmodule : statement_liststatement_list : statement_list new_line statementstatement_list : statementstatement_list : statement_list new_linenew_line : NEW_LINEnew_line : new_line NEW_LINEstatement : PRINT expressionstatement : NAME ASSIGN expressionstatement : expressionexpression : expression PLUS expressionexpression : NEG expressionexpression : INTexpression : NAMEexpression : PAREN_START expression PAREN_ENDexpression : INPUT PAREN_START PAREN_END'
+_lr_signature = 'nonassocPRINTleftPLUSNEGINT PLUS ASSIGN PAREN_START PAREN_END NEG NAME NEW_LINE PRINT INPUTmodule : statement_liststatement_list : statement_list NEW_LINE statementstatement_list : statementstatement : statement : PRINT expressionstatement : NAME ASSIGN expressionstatement : expressionexpression : expression PLUS expressionexpression : NEG expressionexpression : INTexpression : NAMEexpression : PAREN_START expression PAREN_ENDexpression : INPUT PAREN_START PAREN_END'
     
-_lr_action_items = {'NAME':([0,3,4,6,11,16,17,19,23,],[1,12,12,12,12,-5,1,12,-6,]),'INT':([0,3,4,6,11,16,17,19,23,],[2,2,2,2,2,-5,2,2,-6,]),'NEG':([0,3,4,6,11,16,17,19,23,],[3,3,3,3,3,-5,3,3,-6,]),'PAREN_START':([0,3,4,6,9,11,16,17,19,23,],[4,4,4,4,18,4,-5,4,4,-6,]),'PAREN_END':([2,12,13,14,18,21,24,25,],[-12,-13,-11,21,24,-14,-15,-10,]),'PLUS':([1,2,10,12,13,14,15,20,21,24,25,],[-13,-12,19,-13,-11,19,19,19,-14,-15,-10,]),'PRINT':([0,16,17,23,],[6,-5,6,-6,]),'INPUT':([0,3,4,6,11,16,17,19,23,],[9,9,9,9,9,-5,9,9,-6,]),'NEW_LINE':([1,2,7,8,10,12,13,15,16,17,20,21,22,23,24,25,],[-13,-12,-3,16,-9,-13,-11,-7,-5,23,-8,-14,-2,-6,-15,-10,]),'ASSIGN':([1,],[11,]),'$end':([1,2,5,7,8,10,12,13,15,16,17,20,21,22,23,24,25,],[-13,-12,0,-3,-1,-9,-13,-11,-7,-5,-4,-8,-14,-2,-6,-15,-10,]),}
+_lr_action_items = {'NAME':([0,3,4,6,11,16,18,],[1,12,12,12,12,1,12,]),'INT':([0,3,4,6,11,16,18,],[2,2,2,2,2,2,2,]),'NEG':([0,3,4,6,11,16,18,],[3,3,3,3,3,3,3,]),'PAREN_START':([0,3,4,6,9,11,16,18,],[4,4,4,4,17,4,4,4,]),'PAREN_END':([2,12,13,14,17,20,22,23,],[-10,-11,-9,20,22,-12,-13,-8,]),'PLUS':([1,2,10,12,13,14,15,19,20,22,23,],[-11,-10,18,-11,-9,18,18,18,-12,-13,-8,]),'PRINT':([0,16,],[6,6,]),'INPUT':([0,3,4,6,11,16,18,],[9,9,9,9,9,9,9,]),'NEW_LINE':([0,1,2,7,8,10,12,13,15,16,19,20,21,22,23,],[-4,-11,-10,-3,16,-7,-11,-9,-5,-4,-6,-12,-2,-13,-8,]),'ASSIGN':([1,],[11,]),'$end':([0,1,2,5,7,8,10,12,13,15,16,19,20,21,22,23,],[-4,-11,-10,0,-3,-1,-7,-11,-9,-5,-4,-6,-12,-2,-13,-8,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -16,7 +16,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'statement_list':([0,],[8,]),'new_line':([8,],[17,]),'expression':([0,3,4,6,11,17,19,],[10,13,14,15,20,10,25,]),'statement':([0,17,],[7,22,]),'module':([0,],[5,]),}
+_lr_goto_items = {'statement_list':([0,],[8,]),'expression':([0,3,4,6,11,16,18,],[10,13,14,15,19,10,23,]),'statement':([0,16,],[7,21,]),'module':([0,],[5,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -26,19 +26,17 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> module","S'",1,None,None,None),
-  ('module -> statement_list','module',1,'p_module_module','parse.py',51),
-  ('statement_list -> statement_list new_line statement','statement_list',3,'p_newline_statement','parse.py',54),
-  ('statement_list -> statement','statement_list',1,'p_statement_list','parse.py',58),
-  ('statement_list -> statement_list new_line','statement_list',2,'p_trailing_new_line','parse.py',61),
-  ('new_line -> NEW_LINE','new_line',1,'p_new_line_single','parse.py',64),
-  ('new_line -> new_line NEW_LINE','new_line',2,'p_new_line_repeat','parse.py',66),
-  ('statement -> PRINT expression','statement',2,'p_print_statement','parse.py',68),
-  ('statement -> NAME ASSIGN expression','statement',3,'p_assign_statement','parse.py',71),
-  ('statement -> expression','statement',1,'p_disard_statement','parse.py',74),
-  ('expression -> expression PLUS expression','expression',3,'p_plus_expression','parse.py',77),
-  ('expression -> NEG expression','expression',2,'p_neg_expression','parse.py',80),
-  ('expression -> INT','expression',1,'p_int_expression','parse.py',83),
-  ('expression -> NAME','expression',1,'p_name_expression','parse.py',86),
-  ('expression -> PAREN_START expression PAREN_END','expression',3,'p_paren_expression','parse.py',89),
-  ('expression -> INPUT PAREN_START PAREN_END','expression',3,'p_input_expression','parse.py',92),
+  ('module -> statement_list','module',1,'p_module_module','parse.py',54),
+  ('statement_list -> statement_list NEW_LINE statement','statement_list',3,'p_newline_statement','parse.py',61),
+  ('statement_list -> statement','statement_list',1,'p_statement_list','parse.py',65),
+  ('statement -> <empty>','statement',0,'p_empty_statement','parse.py',68),
+  ('statement -> PRINT expression','statement',2,'p_print_statement','parse.py',70),
+  ('statement -> NAME ASSIGN expression','statement',3,'p_assign_statement','parse.py',73),
+  ('statement -> expression','statement',1,'p_disard_statement','parse.py',76),
+  ('expression -> expression PLUS expression','expression',3,'p_plus_expression','parse.py',79),
+  ('expression -> NEG expression','expression',2,'p_neg_expression','parse.py',82),
+  ('expression -> INT','expression',1,'p_int_expression','parse.py',85),
+  ('expression -> NAME','expression',1,'p_name_expression','parse.py',88),
+  ('expression -> PAREN_START expression PAREN_END','expression',3,'p_paren_expression','parse.py',91),
+  ('expression -> INPUT PAREN_START PAREN_END','expression',3,'p_input_expression','parse.py',94),
 ]
