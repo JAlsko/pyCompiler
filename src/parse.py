@@ -52,7 +52,11 @@ def parse(input):
 		)
 	def p_module_module(t):
 		'module : statement_list'
-		t[0] = Module(None, Stmt(t[1]))
+		stmt = []
+		for i in t[1]:
+			if i != None:
+				stmt.append(i)
+		t[0] = Module(None, Stmt(stmt))
 	def p_newline_statement(t):
 		'statement_list : statement_list NEW_LINE statement'
 		t[0] = t[1]
