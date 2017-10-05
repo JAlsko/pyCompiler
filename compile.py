@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 import sys
+import compiler
+from compiler.ast import *
 import src.structs as structs
 import src.flatten as flatten
 import src.parse as parse
@@ -17,8 +19,8 @@ def main():
 		if '-concsyn' in sys.argv:
 			print program
 		inputFile.close()
-		ast = parse.parse(program)
-		#ast = compile.parse(program)
+		#ast = parse.parse(program)
+		ast = compiler.parse(program)
 		if '-ast' in sys.argv:
 			print ast
 		flatAst, variables = flatten.flatten(ast)

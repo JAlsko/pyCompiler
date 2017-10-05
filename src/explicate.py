@@ -1,37 +1,47 @@
 import compiler
 from compiler.ast import *
-import structs
+from eStructs import *
+
+variables = {}
+
+INT = 0
+BOOL = 1
+BIG = 3
 
 '''
 Need Let(x, e1, e2), GetTag(x), InjectFrom(TAG,e), and ProjectTo(TAG,e)
 '''
 
-class Let():
-	def __init__(self, var, rhs, body):
-		self.var = var
-		self.rhs = rhs
-		self.body = body
-	def __str__(self):
-		return "Let(" + str(self.var) + ", " + str(self.rhs) + ", " + str(self.body) + ")"
+def newVariable(variables, name):
+	if name != None:
+		for i in variables:
+			if name == variables[i]:
+				return i
+	ret = Name(str(len(variables)))
+	variables[ret] = name
+	return ret
 
-class GetTag():
-	def __init__(self, arg):
-		self.arg = arg
-	def __str__(self):
-		return "GetTag(" + str(self.x) + ")"
-
-class ProjectTo(node):
-	def __init__(self, typ, arg):
-		self.typ = typ
-		self.arg = arg
-
-class InjectFrom(node):
-	def __init__(self, typ, arg):
-		self.typ = typ
-		self.arg = arg
+def ifElseChain(conditions, actions):
+	if len(conditions) != (len(actions) - 1):
+		raise Exception("conditions don't match actions")
+	struct = actions[-1]
+	for i in range(0, len(conditions)):
+		struct = IfExpr(conditions[i], actions[i], struct)
+	return struct
 
 def explicate(ast, variables):
+	if isinstance(ast, Assign):
+		x = newVariable(variables)
+		y = newVariable(variables)
+		conditions = [And(Eq(GetTag(x), INT), Eq(GetTag(y), INT)), And(Eq(GetTag(x), BOOL), Eq(GetTag(y), BOOL)), And(Eq(GetTag(x), BIG), Eq(GetTag(y), BIG))]
+		actions = [AddInt(x,y), AddBool(x,y), AddBig(x,y), CallFunc("Abort")]
+		working = Let(x, explicate(ast.left, variables), Let(y, explicate(ast.right, variables), ifElseChain(conditions,actions)))
+		return working
+
 	if isinstance(ast, Add):
-		x = structs.newVariable()
-		y = structs.newVariable()
-		working = Let(x, ast.left, Let(y, ast.right, IfExpr(And(Eq(GetTag(x), INT), GetTag(y), INT), AddInt(x, y)))
+		x = newVariable(variables)
+		y = newVariable(variables)
+		conditions = [And(Eq(GetTag(x), INT), Eq(GetTag(y), INT)), And(Eq(GetTag(x), BOOL), Eq(GetTag(y), BOOL)), And(Eq(GetTag(x), BIG), Eq(GetTag(y), BIG))]
+		actions = [AddInt(x,y), AddBool(x,y), AddBig(x,y), CallFunc("Abort")]
+		working = Let(x, explicate(ast.left, variables), Let(y, explicate(ast.right, variables), ifElseChain(conditions,actions)))
+		return working
