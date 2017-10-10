@@ -33,12 +33,12 @@ class GetTag():
 	def __str__(self):
 		return "GetTag(" + str(self.x) + ")"
 
-class ProjectTo(node):
+class ProjectTo():
 	def __init__(self, typ, arg):
 		self.typ = typ
 		self.arg = arg
 
-class InjectFrom(node):
+class InjectFrom():
 	def __init__(self, typ, arg):
 		self.typ = typ
 		self.arg = arg

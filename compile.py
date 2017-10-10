@@ -11,6 +11,7 @@ import src.liveness as liveness
 import src.graph as graph
 import src.spill as spill
 import src.printAssembly as printAssem
+import src.explicate as explicate
 import pprint
 
 def main():
@@ -23,6 +24,10 @@ def main():
 		ast = compiler.parse(program)
 		if '-ast' in sys.argv:
 			print ast
+		explicateAst = explicate.explicate(ast, {})
+		if '-explicate' in sys.argv:
+			print explicateAst
+		'''
 		flatAst, variables = flatten.flatten(ast)
 		if '-flatpy' in sys.argv:
 			structs.printLinkedList(flatAst)
@@ -49,6 +54,7 @@ def main():
 				break;
 			unspillable.extend(new_unspillable)
 		printAssem.createAssembly(sys.argv[1][:-2] + "s", flatAssem, nodeGraph, numColors)
+		'''
 
 		
 main()
