@@ -81,20 +81,20 @@ def explicate(ast, variables):
 		return Let(x, explicate(ast.expr, variables), Let(y, explicate(ast.ops[0][1], variables), ifElseChain(conditions,actions)))
 	elif isinstance(ast, And):
 		x = newVariable(variables)
-		return Let(x, ast.nodes[0], IfExp(ProjectTo(Const(BOOL), x), ast.nodes[1], x))
+		return Let(x, explicate(ast.nodes[0], variables), IfExp(ProjectTo(Const(BOOL), x), explicate(ast.nodes[1], variables), x))
 	elif isinstance(ast, Or):
 		x = newVariable(variables)
-		return Let(x, ast.nodes[0], IfExp(Not(ProjectTo(Const(BOOL), x)), ast.nodes[1], x))
+		return Let(x, explicate(ast.nodes[0], variables), IfExp(Not(ProjectTo(Const(BOOL), x)), explicate(ast.nodes[1], variables), x))
 	elif isinstance(ast, UnarySub):
 		x = newVariable(variables)
-		conditions = [qOr(Compare(GetTag(x), ["==", Const(INT)] ), Compare(GetTag(x), ["==", Const(BOOL)] ), variables)]
+		conditions = [qOr(Compare(GetTag(x), [("==", Const(INT))] ), Compare(GetTag(x), [("==", Const(BOOL))] ), variables)]
 		actions = [InjectFrom(Const(INT), UnarySub(ProjectTo(Const(INT), x))), CallFunc("abort", [])]
-		return Let(x, ast.expr, ifElseChain(conditions, actions))
+		return Let(x, explicate(ast.expr, variables), ifElseChain(conditions, actions))
 	elif isinstance(ast, Not):
 		x = newVariable(variables)
-		conditions = [qOr(Compare(GetTag(x),["==", Const(INT)]), Compare(GetTag(x),["==", Const(BOOL)]), variables)]
+		conditions = [qOr(Compare(GetTag(x), [("==", Const(INT))] ), Compare(GetTag(x), [("==", Const(BOOL))] ), variables)]
 		actions = [InjectFrom(Const(BOOL), Not(ProjectTo(Const(BOOL), x))), CallFunc("abort", [])]
-		return Let(x, ast.expr, ifElseChain(conditions, actions))
+		return Let(x, explicate(ast.expr, variables), ifElseChain(conditions, actions))
 	elif isinstance(ast, CallFunc):
 		newArgs = []
 		for arg in ast.args:
@@ -118,4 +118,4 @@ def explicate(ast, variables):
 		raise Exception("No AST match: " + str(ast))
 
 
-Subscript(Name('dict1'), 'OP_APPLY', [Const(1)])
+#Subscript(Name('dict1'), 'OP_APPLY', [Const(1)])
