@@ -24,11 +24,15 @@ def createAssembly(flatAst):
 			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
 			last = addInstruction(last, structs.x86IRNode("negl", node.output, None))
 		elif node.operation == "InjectFrom":
-			pass
+			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
+			last = addInstruction(last, structs.x86IRNode("shll", 2, node.output))
+			last = addInstruction(last, structs.x86IRNode("xorl", node.input2, node.output))
 		elif node.operation == "ProjectTo":
-			pass
+			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
+			last = addInstruction(last, structs.x86IRNode("sarl", 2, node.output))
 		elif node.operation == "GetTag":
-			pass
+			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
+			last = addInstruction(last, structs.x86IRNode("andl", 3, node.output))
 		elif node.operation == "IfExp":
 			last = addInstruction(last, structs.x86IRNode("IfExp", node.input1, node.output))
 			last.thenNext = createAssembly(node.thenNext)
@@ -40,7 +44,8 @@ def createAssembly(flatAst):
 		elif node.operation == "CompareNE":
 			pass
 		elif node.operation == "Not":
-			pass
+			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
+			last = addInstruction(last, structs.x86IRNode("notl", node.output, None))
 		elif node.operation == "CallFunc":
 			for var in reversed(node.input2):
 				last = addInstruction(last, structs.x86IRNode("pushl", var, None))
