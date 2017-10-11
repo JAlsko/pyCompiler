@@ -9,7 +9,12 @@ class GraphNode():
 		return "GraphNode(" + str(self.color) + ", " + str(self.saturation) + ", " + str(self.unspillable) + ", " + str(self.edges) + ")"
 
 def createGraph(x86IR, variables, unspillable):
-	nodes = {"eax":GraphNode(True), "ecx":GraphNode(True), "edx":GraphNode(True)}
+	nodes = {"eax":GraphNode(True), "ecx":GraphNode(True), "edx":GraphNode(True), "al":GraphNode(True), "cl":GraphNode(True)}
+	nodes["eax"].edges.add(nodes["al"])
+	nodes["al"].edges.add(nodes["eax"])	
+	nodes["ecx"].edges.add(nodes["cl"])
+	nodes["cl"].edges.add(nodes["ecx"])
+
 	for var in variables:
 		spill = False
 		if var in unspillable:
@@ -43,10 +48,14 @@ def createGraph(x86IR, variables, unspillable):
 		elif working.operation == "call":
 			for var in working.liveness:
 				nodes[var].edges.add("eax")
+				nodes[var].edges.add("al")
 				nodes[var].edges.add("ecx")
+				nodes[var].edges.add("cl")
 				nodes[var].edges.add("edx")
 				nodes["eax"].edges.add(var)
+				nodes["al"].edges.add(var)
 				nodes["ecx"].edges.add(var)
+				nodes["cl"].edges.add(var)
 				nodes["edx"].edges.add(var)
 		working = working.next
 	return nodes
@@ -67,7 +76,9 @@ def saturate(node, color, nodes):
 def colorGraph(nodes):
 	colors = ["%eax", "%ecx", "%edx", "%ebx", "%edi", "%esi"]
 	saturate(nodes["eax"],"%eax", nodes)
+	saturate(nodes["al"],"%eax", nodes)
 	saturate(nodes["ecx"],"%ecx", nodes)
+	saturate(nodes["cl"],"%ecx", nodes)
 	saturate(nodes["edx"],"%edx", nodes)
 
 	while True:
