@@ -47,11 +47,12 @@ def explicate(ast, variables):
 	elif isinstance(ast, Add):
 		x = newVariable(variables)
 		y = newVariable(variables)
+		print str(Let(x, None, None))
 		conditions = []
 		actions = []
-		conditions.append(Or(And(Compare(GetTag(x), [('==', INT)]), Compare(GetTag(y), [('==', INT)]), And(Compare(GetTag(x), [('==', BOOL)]), Compare(GetTag(y), [('==', BOOL)])))))
-		actions.append(InjectFrom(INT, Add(ProjectTo(INT, x),ProjectTo(INT,y))))
-		conditions.append(And(Compare(GetTag(x), [('==', BIG)]), Compare(GetTag(y), [('==', BIG)])))
+		conditions.append(Or([And([Compare(GetTag(x), [('==', INT)]), Compare(GetTag(y), [('==', INT)])]),And([Compare(GetTag(x), [('==', BOOL)]), Compare(GetTag(y), [('==', BOOL)])])]))
+		actions.append(InjectFrom(INT, Add((ProjectTo(INT, x),ProjectTo(INT,y)))))
+		conditions.append(And([Compare(GetTag(x), [('==', BIG)]), Compare(GetTag(y), [('==', BIG)])]))
 		actions.append(InjectFrom(BIG,CallFunc("add", [ProjectTo(BIG, x), ProjectTo(BIG, y)])))
 		actions.append(CallFunc("Abort", []))
 		return Let(x, explicate(ast.left, variables), Let(y, explicate(ast.right, variables), ifElseChain(conditions,actions)))
@@ -60,9 +61,9 @@ def explicate(ast, variables):
 		y = newVariable(variables)
 		conditions = []
 		actions = []
-		conditions.append(Or(And(Compare(GetTag(x), [('==', INT)]), Compare(GetTag(y), [('==', INT)]), And(Compare(GetTag(x), [('==', BOOL)]), Compare(GetTag(y), [('==', BOOL)])))))
+		conditions.append(Or([And([Compare(GetTag(x), [('==', INT)]), Compare(GetTag(y), [('==', INT)])]),And([Compare(GetTag(x), [('==', BOOL)]), Compare(GetTag(y), [('==', BOOL)])])]))
 		actions.append(InjectFrom(BOOL, Compare(ProjectTo(INT, x),[(ast.ops[0][0],ProjectTo(INT,y))])))
-		conditions.append(And(Compare(GetTag(x), [('==', BIG)]), Compare(GetTag(y), [('==', BIG)])))
+		conditions.append(And([Compare(GetTag(x), [('==', BIG)]), Compare(GetTag(y), [('==', BIG)])]))
 		actions.append(InjectFrom(BIG,CallFunc("equal_pyobj", [x, y])))
 		actions.append(CallFunc("Abort", []))
 		return Let(x, explicate(ast.expr, variables), Let(y, explicate(ast.ops[0][1], variables), ifElseChain(conditions,actions)))
@@ -74,12 +75,12 @@ def explicate(ast, variables):
 		return Let(x, ast.nodes[0], IfExp(Not(ProjectTo(BOOL, x)), ast.nodes[1], x))
 	elif isinstance(ast, UnarySub):
 		x = newVariable(variables)
-		conditions = [Or(Eq(GetTag(x), INT), Eq(GetTag(x), BOOL))]
+		conditions = [Or([Eq(GetTag(x), INT), Eq(GetTag(x), BOOL)])]
 		actions = [InjectFrom(INT, UnarySub(ProjectTo(INT, x))), CallFunc("abort", [])]
 		return Let(x, ast.expr, ifElseChain(conditions, actions))
 	elif isinstance(ast, Not):
 		x = newVariable(variables)
-		conditions = [Or(Eq(GetTag(x), INT), Eq(GetTag(x), BOOL))]
+		conditions = [Or([Eq(GetTag(x), INT), Eq(GetTag(x), BOOL)])]
 		actions = [InjectFrom(BOOL, Not(ProjectTo(BOOL, x))), CallFunc("abort", [])]
 		return Let(x, ast.expr, ifElseChain(conditions, actions))
 	elif isinstance(ast, CallFunc):

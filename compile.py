@@ -4,6 +4,7 @@ import sys
 import compiler
 from compiler.ast import *
 import src.structs as structs
+import src.eStructs as eStructs
 import src.flatten as flatten
 import src.parse as parse
 import src.flatPyToX86IR as tox86IR
