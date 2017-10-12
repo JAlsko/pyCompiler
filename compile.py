@@ -13,6 +13,7 @@ import src.graph as graph
 import src.spill as spill
 import src.printAssembly as printAssem
 import src.explicate as explicate
+import src.typeCheck as typeCheck
 import pprint
 
 def main():
@@ -28,6 +29,7 @@ def main():
 		explicateAst = explicate.explicate(ast, {})
 		if '-explicate' in sys.argv:
 			print explicateAst
+		typeCheck.typeCheck(explicateAst, {})
 		'''
 		flatAst, variables = flatten.flatten(ast)
 		if '-flatpy' in sys.argv:

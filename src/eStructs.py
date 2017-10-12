@@ -1,23 +1,10 @@
-class AddInt():
-	def __init__(self, e1, e2):
-		self.e1 = e1
-		self.e2 = e2
+class Bool():
+	def __init__(self, val):
+		self.value = val
 	def __str__(self):
-		return "AddInt(" + str(e1) + ", " + str(e2) + ")"
-
-class AddBool():
-	def __init__(self, e1, e2):
-		self.e1 = e1
-		self.e2 = e2
-	def __str__(self):
-		return "AddBool(" + str(e1) + ", " + str(e2) + ")"
-
-class AddBig():
-	def __init__(self, e1, e2):
-		self.e1 = e1
-		self.e2 = e2
-	def __str__(self):
-		return "AddBig(" + str(e1) + ", " + str(e2) + ")"
+		return "Bool(" + str(self.value) + ")"
+	def __repr__(self):
+		return "Bool(" + str(self.value) + ")"
 
 class Let():
 	def __init__(self, var, rhs, body):
