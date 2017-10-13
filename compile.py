@@ -30,10 +30,10 @@ def main():
 		if '-explicate' in sys.argv:
 			print explicateAst
 		typeCheck.typeCheck(explicateAst, {})
-		'''
-		flatAst, variables = flatten.flatten(ast)
+		flatAst, variables = flatten.flatten(explicateAst)
 		if '-flatpy' in sys.argv:
 			structs.printLinkedList(flatAst)
+		'''
 		flatAssem = tox86IR.createAssembly(flatAst)
 		if '-flatassem' in sys.argv:
 			structs.printLinkedList(flatAssem)

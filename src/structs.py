@@ -4,6 +4,8 @@ class flatNode():
 	def __init__(self, _operation, _next, _prev, _output, _input1, _input2):
 		self.operation = _operation
 		self.next = _next
+		self.ifNext = None
+		self.elseNext = None
 		self.prev = _prev
 		self.output = _output
 		self.input1 = _input1
