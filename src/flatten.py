@@ -25,6 +25,8 @@ def flattenRecurs(ast, variables):
 					first = result
 					last = structs.getLast(first)
 				else:
+					if isinstance(result, tuple):
+						print str(result[0])
 					last.next = result
 					result.prev = last
 					last = structs.getLast(last)
@@ -48,6 +50,8 @@ def flattenRecurs(ast, variables):
 	elif isinstance(ast, Discard):
 		return flattenRecurs(ast.expr, variables)[0]
 	elif isinstance(ast, Const):
+		return None, ast.value
+	elif isinstance(ast, Bool):
 		return None, ast.value
 	elif isinstance(ast, Name):
 		for i in variables:
@@ -150,7 +154,7 @@ def flattenRecurs(ast, variables):
 				last.next = result[0]
 				result[0].prev = last
 		output = newVariable(variables, None)
-		funcNode = structs.flatNode("Input", None, None, output, ast.args, None)
+		funcNode = structs.flatNode("CallFunc", None, None, output, ast.node, varsList)
 		if first == None:
 			first = funcNode
 		else:
@@ -186,8 +190,6 @@ def flattenRecurs(ast, variables):
 	elif isinstance(ast, GetTag):
 		result = flattenRecurs(ast.arg, variables)
 		output = newVariable(variables, None)
-		print str(ast.arg)
-		print str(result)
 		if result[0] == None:
 			first = structs.flatNode("GetTag", None, None, output, result[1], None)
 		else:
@@ -220,19 +222,55 @@ def flattenRecurs(ast, variables):
 		return first, output
 	elif isinstance(ast, Let):
 		output = newVariable(variables, ast.var.name)
-		result0 = flattenRecurs(ast.body, variables)
-		result1 = flattenRecurs(ast.rhs, variables)
-		first1 = result1[0]
+		result1 = flattenRecurs(ast.body, variables)
+		result0 = flattenRecurs(ast.rhs, variables)
 		first0 = result0[0]
-		last = structs.getLast(first1)
-		assignNode = structs.flatNode("Assign", first1, last, output, first1, None)
-		if first1 != None:
+		first1 = result1[0]
+		last = structs.getLast(first0)
+		assignNode = structs.flatNode("Assign", first1, last, output, result0[0], None)
+		if first0 != None:
 			last.next = assignNode
 		else:
-			first1 = assignNode
-		if first0 != None:
-			first0.prev = assignNode
-		return first1, result0[1]
+			first0 = assignNode
+		if first1 != None:
+			first1.prev = assignNode
+		return first0, result0[1]
+	elif isinstance(ast, List):
+		first = None
+		listElem = []
+		for node in ast.nodes:
+			result = flattenRecurs(node, variables)
+			listElem.append(result[1])
+			if first == None:
+				first = result[0]
+			else:
+				last = structs.getLast(first)
+				last.next = result[0]
+				result[0].prev = last
+		return first, listElem
+	elif isinstance(ast, Dict):
+		first = None
+		dictElem = {}
+		for item in ast.items:
+			result = flattenRecurs(item[0], variables)
+			key = result[1]
+			if first == None:
+				first = result[0]
+			else:
+				last = structs.getLast(first)
+				last.next = result[0]
+				result[0].prev = last
+
+			result = flattenRecurs(item[1], variables)
+			dictElem[key] = result[1]
+			if first == None:
+				first = result[0]
+			else:
+				last = structs.getLast(first)
+				last.next = result[0]
+				result[0].prev = last
+
+		return first, dictElem
 	else:
 		raise Exception("No AST match: " + str(ast))
 	

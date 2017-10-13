@@ -41,7 +41,7 @@ def explicate(ast, variables):
 			newStmts.append(explicate(statement, variables))
 		return Stmt(newStmts)
 	elif isinstance(ast, Printnl):
-		return CallFunc("print_any", [explicate(ast.nodes[0], variables)])
+		return Discard(CallFunc("print_any", [explicate(ast.nodes[0], variables)]))
 	elif isinstance(ast, Assign):
 		return Assign([explicate(ast.nodes[0], variables)], explicate(ast.expr, variables))
 	elif isinstance(ast, AssName):

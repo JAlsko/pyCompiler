@@ -4,7 +4,7 @@ class flatNode():
 	def __init__(self, _operation, _next, _prev, _output, _input1, _input2):
 		self.operation = _operation
 		self.next = _next
-		self.ifNext = None
+		self.thenNext = None
 		self.elseNext = None
 		self.prev = _prev
 		self.output = _output
@@ -17,6 +17,8 @@ class Var():
 	def __init__(self, _name):
 		self.name = _name
 	def __str__(self):
+		return "Var(" + str(self.name) + ")"
+	def __repr__(self):
 		return "Var(" + str(self.name) + ")"
 
 class Esp():
