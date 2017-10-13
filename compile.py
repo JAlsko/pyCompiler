@@ -32,11 +32,11 @@ def main():
 		typeCheck.typeCheck(explicateAst, {})
 		flatAst, variables = flatten.flatten(explicateAst)
 		if '-flatpy' in sys.argv:
-			structs.printLinkedList(flatAst)
-		'''
+			structs.printLLwithIf(flatAst, 0)
 		flatAssem = tox86IR.createAssembly(flatAst)
 		if '-flatassem' in sys.argv:
-			structs.printLinkedList(flatAssem)
+			structs.printLLwithIf(flatAssem, 0)
+		'''
 		if '-vars' in sys.argv:
 			print structs.setToStr(variables)
 		unspillable = []

@@ -42,11 +42,34 @@ class x86IRNode():
 		self.var1 = _var1
 		self.var2 = _var2
 		self.next = None
+		self.thenNext = None
+		self.elseNext = None
 		self.prev = None
 		self.liveness = set([])
 	def __str__(self):
 		return "(" + str(self.operation) + ", " + str(self.var1) + ", " + str(self.var2) + ", " + setToStr(self.liveness) + ")"
 
+def printLLwithIf(node, indent):
+	while node != None:
+		string = ""
+		for i in range(0, indent):
+			string += "\t"
+		string += str(node)
+		print string
+		if node.operation == "IfExp":
+			string = ""
+			for i in range(0, indent):
+				string += "\t"
+			string += "Then:"
+			print string
+			printLLwithIf(node.thenNext, indent + 1)
+			string = ""
+			for i in range(0, indent):
+				string += "\t"
+			string += "Else:"
+			print string
+			printLLwithIf(node.elseNext, indent + 1)
+		node = node.next
 
 def printLinkedList(node):
 	while node != None:

@@ -13,6 +13,8 @@ def newVariable(variables, name):
 	return ret
 
 def flattenRecurs(ast, variables):
+	#print str(ast)
+	#print ""
 	if isinstance(ast, Module):
 		return flattenRecurs(ast.node, variables)
 	elif isinstance(ast, Stmt):
@@ -170,6 +172,10 @@ def flattenRecurs(ast, variables):
 		last = structs.getLast(first)
 		output = newVariable(variables, None)
 		ifNode = structs.flatNode("IfExp", None, last, output, result0[1], None)
+		if first == None:
+			first = ifNode
+		else:
+			last.next = ifNode
 		first1 = result1[0]
 		first2 = result2[0]
 		last1 = structs.getLast(first1)
@@ -186,6 +192,8 @@ def flattenRecurs(ast, variables):
 		first1.prev = ifNode
 		ifNode.elseNext = first2
 		first2.prev = ifNode
+		#print str(ast)
+		#structs.printLLwithIf(first, 0)
 		return first, output
 	elif isinstance(ast, GetTag):
 		result = flattenRecurs(ast.arg, variables)
@@ -227,14 +235,14 @@ def flattenRecurs(ast, variables):
 		first0 = result0[0]
 		first1 = result1[0]
 		last = structs.getLast(first0)
-		assignNode = structs.flatNode("Assign", first1, last, output, result0[0], None)
+		assignNode = structs.flatNode("Assign", first1, last, output, result0[1], None)
 		if first0 != None:
 			last.next = assignNode
 		else:
 			first0 = assignNode
 		if first1 != None:
 			first1.prev = assignNode
-		return first0, result0[1]
+		return first0, result1[1]
 	elif isinstance(ast, List):
 		first = None
 		listElem = []
