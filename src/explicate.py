@@ -32,6 +32,16 @@ def qOr(e1,e2, variables):
 	x = newVariable(variables)
 	return Let(x, e1, IfExp(Not(x), e2, x))
 
+def getBool(e1, variables):
+	conditions = []
+	actions = []
+	conditions.append(qOr(Compare(GetTag(e1), [("==", Const(INT))] ), Compare(GetTag(e1), [("==", Const(BOOL))] ), variables))
+	actions.append(ProjectTo(Const(BOOL), e1))
+	conditions.append(Compare(GetTag(e1), [("==", Const(BIG))] ))
+	actions.append(Not(qOr(CallFunc("equal", [ProjectTo(Const(BIG), e1), ProjectTo(Const(BIG), List([]))]),CallFunc("equal", [ProjectTo(Const(BIG), e1), ProjectTo(Const(BIG), Dict([]))]), variables)))
+	actions.append(CallFunc("abort", []))
+	return ifElseChain(conditions, actions)
+
 def explicate(ast, variables):
 	if isinstance(ast, Module):
 		return Module(None, explicate(ast.node, variables))
@@ -84,10 +94,10 @@ def explicate(ast, variables):
 		return Let(x, explicate(ast.expr, variables), Let(y, explicate(ast.ops[0][1], variables), ifElseChain(conditions,actions)))
 	elif isinstance(ast, And):
 		x = newVariable(variables)
-		return Let(x, explicate(ast.nodes[0], variables), IfExp(ProjectTo(Const(BOOL), x), explicate(ast.nodes[1], variables), x))
+		return Let(x, explicate(ast.nodes[0], variables), IfExp(getBool(x, variables), explicate(ast.nodes[1], variables), x))
 	elif isinstance(ast, Or):
 		x = newVariable(variables)
-		return Let(x, explicate(ast.nodes[0], variables), IfExp(Not(ProjectTo(Const(BOOL), x)), explicate(ast.nodes[1], variables), x))
+		return Let(x, explicate(ast.nodes[0], variables), IfExp(Not(getBool(x, variables)), explicate(ast.nodes[1], variables), x))
 	elif isinstance(ast, UnarySub):
 		x = newVariable(variables)
 		conditions = [qOr(Compare(GetTag(x), [("==", Const(INT))] ), Compare(GetTag(x), [("==", Const(BOOL))] ), variables)]
@@ -95,9 +105,7 @@ def explicate(ast, variables):
 		return Let(x, explicate(ast.expr, variables), ifElseChain(conditions, actions))
 	elif isinstance(ast, Not):
 		x = newVariable(variables)
-		conditions = [qOr(Compare(GetTag(x), [("==", Const(INT))] ), Compare(GetTag(x), [("==", Const(BOOL))] ), variables)]
-		actions = [InjectFrom(Const(BOOL), Not(ProjectTo(Const(BOOL), x))), CallFunc("abort", [])]
-		return Let(x, explicate(ast.expr, variables), ifElseChain(conditions, actions))
+		return Let(x, explicate(ast.expr, variables), InjectFrom(Const(BOOL), Not(getBool(x, variables))))
 	elif isinstance(ast, CallFunc):
 		newArgs = []
 		for arg in ast.args:
@@ -117,7 +125,8 @@ def explicate(ast, variables):
 		if ast.flags == 'OP_APPLY':
 			return CallFunc("get_subscript", [explicate(ast.expr, variables),explicate(ast.subs[0], variables)])
 	elif isinstance(ast, IfExp):
-		return IfExp(ProjectTo(Const(BOOL),explicate(ast.test, variables)), explicate(ast.then, variables), explicate(ast.else_, variables))
+		x = newVariable(variables)
+		return IfExp(Let(x, explicate(ast.test, variables), getBool(x, variables)), explicate(ast.then, variables), explicate(ast.else_, variables))
 	else:
 		raise Exception("No AST match: " + str(ast))
 
