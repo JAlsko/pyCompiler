@@ -5,8 +5,79 @@ class GraphNode():
 		self.saturation = set([])
 		self.edges = set([])
 		self.unspillable = _unspillable
+		self.qkey = None
 	def __str__(self):
 		return "GraphNode(" + str(self.color) + ", " + str(self.saturation) + ", " + str(self.unspillable) + ", " + str(self.edges) + ")"
+
+class heapElement():
+	def __init__(self, object_):
+		self.value = 0
+		self.object = object_
+	def __repr__(self):
+		return "HE(" + str(self.value) + "," + str(self.object) + ")"
+
+def insertHeap(heap, obj, value):
+	heap.append(heapElement(obj))
+	return increment(heap, len(heap) - 1, value)
+
+def increment(heap, loc, new_value):
+	parent_loc = ((loc + 1) / 2) - 1
+	if parent_loc != -1 and new_value > heap[parent_loc].value:
+		holder = heap[parent_loc]
+		heap[parent_loc] = heap[loc]
+		heap[loc] = holder
+		return increment(heap, parent_loc, new_value)
+	else:
+		heap[loc].value = new_value
+		return loc
+
+def pop(heap):
+	if not heap:
+		return None
+	else:
+		result = heap[0].object
+		heap[0] = heap[len(heap) - 1]
+		del heap[-1]
+		if heap:
+			shiftDown(heap, 0)
+		return result
+
+def shiftDown(heap, loc):
+	leftLoc = loc * 2 + 1
+	rightLoc = loc * 2 + 2
+	if leftLoc > (len(heap) - 1):
+		leftVal = 0
+		rightVal = 0
+	elif leftLoc == (len(heap) - 1):
+		leftVal = heap[leftLoc].value
+		rightVal = 0
+	else:
+		leftVal = heap[leftLoc].value
+		rightVal = heap[rightLoc].value
+	value = heap[loc].value
+	if leftVal > value:
+		if leftVal > rightVal:
+			heapSwap(heap, loc, leftLoc)
+			shiftDown(heap, leftLoc)
+		else:
+			heapSwap(heap, loc, rightLoc)
+			shiftDown(heap, rightLoc)
+	elif rightVal > value:
+		heapSwap(heap, loc, rightLoc)
+		shiftDown(heap, rightLoc)
+	updateLocation(heap, loc)
+
+
+def heapSwap(heap, loc1, loc2):
+	holder = heap[loc1]
+	heap[loc1] = heap[loc2]
+	heap[loc2] = holder
+
+
+
+def updateLocation(heap, loc):
+	pass
+
 
 def createGraph(x86IR, variables, unspillable):
 	nodes = {"eax":GraphNode(True), "ecx":GraphNode(True), "edx":GraphNode(True), "al":GraphNode(True), "cl":GraphNode(True)}
