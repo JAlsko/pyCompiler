@@ -79,7 +79,7 @@ def updateLocation(heap, loc):
 	pass
 
 def createGraphWrapper(x86IR, variables, unspillable):
-	nodes = {"eax":GraphNode(True), "ecx":GraphNode(True), "edx":GraphNode(True)}
+	nodes = {"eax":GraphNode(True), "ecx":GraphNode(True), "edx":GraphNode(True), "al":GraphNode(True)}
 
 	for var in variables:
 		spill = False
@@ -102,7 +102,7 @@ def addEdges(modVar, liveness, nodes):
 def createGraph(x86IR, nodes):
 	working = x86IR
 	while (working != None):
-		if working.operation == "movl":
+		if working.operation in ["movl", "movzbl"]:
 			if isinstance(working.var2, structs.Var):
 				for var in working.liveness:
 					if not (working.var2.name == var):
@@ -115,7 +115,7 @@ def createGraph(x86IR, nodes):
 			addEdges(working.var1, working.liveness, nodes)
 			createGraph(working.thenNext, nodes)
 			createGraph(working.elseNext, nodes)
-		elif working.operation in ["addl", "andl", "shll", "sarl", "xorl"]:
+		elif working.operation in ["addl", "andl", "sall", "sarl", "orl"]:
 			addEdges(working.var2, working.liveness, nodes)
 		elif working.operation in ["negl", "notl", "sete", "setne"]:
 			addEdges(working.var1, working.liveness, nodes)
@@ -145,6 +145,7 @@ def saturate(node, color, nodes):
 def colorGraph(nodes):
 	colors = ["%eax", "%ecx", "%edx", "%ebx", "%edi", "%esi"]
 	saturate(nodes["eax"],"%eax", nodes)
+	saturate(nodes["al"],"%eax", nodes)
 	saturate(nodes["ecx"],"%ecx", nodes)
 	saturate(nodes["edx"],"%edx", nodes)
 

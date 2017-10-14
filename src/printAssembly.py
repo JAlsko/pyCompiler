@@ -34,11 +34,20 @@ def createAssembly(targetFile, flatAssem, graph, numColors):
 			else:
 				outputFile.write("\t" + working.operation + " ")
 				if isinstance(working.var1, structs.Var):
-					outputFile.write(str(graph[working.var1.name].color))
-				elif working.operation == "call":
+					if working.var1.name == "al":
+						outputFile.write("%al")
+					else:
+						outputFile.write(str(graph[working.var1.name].color))
+				elif working.operation in ["call", "jmp", "je"]:
 					outputFile.write(str(working.var1))
 				else:
-					outputFile.write("$" + str(working.var1))
+					if working.var1 != None:
+						if working.var1 == True:
+							outputFile.write("$1")
+						elif working.var1 == False:
+							outputFile.write("$0")
+						else:
+							outputFile.write("$" + str(working.var1))
 				if isinstance(working.var2, structs.Var):
 					outputFile.write(", " + str(graph[working.var2.name].color))
 				elif working.var2 != None:

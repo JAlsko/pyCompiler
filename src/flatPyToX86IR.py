@@ -26,8 +26,8 @@ def createAssembly(flatAst):
 		elif node.operation == "InjectFrom":
 			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
 			if node.input2 != 3:
-				last = addInstruction(last, structs.x86IRNode("shll", 2, node.output))
-				last = addInstruction(last, structs.x86IRNode("xorl", node.input2, node.output))
+				last = addInstruction(last, structs.x86IRNode("sall", 2, node.output))
+				last = addInstruction(last, structs.x86IRNode("orl", node.input2, node.output))
 			else:
 				last = addInstruction(last, structs.x86IRNode("addl", 3, node.output))
 		elif node.operation == "ProjectTo":
@@ -44,19 +44,26 @@ def createAssembly(flatAst):
 			last.thenNext = createAssembly(node.thenNext)
 			last.elseNext = createAssembly(node.elseNext)
 		elif node.operation == "CompareEQ":
-			last = addInstruction(last, structs.x86IRNode("cmpl", node.input1, node.input2))
-			last = addInstruction(last, structs.x86IRNode("sete", node.output, None))
+			if isinstance(node.input1, structs.Var):
+				last = addInstruction(last, structs.x86IRNode("cmpl", node.input2, node.input1))
+			else:
+				last = addInstruction(last, structs.x86IRNode("cmpl", node.input1, node.input2))
+			last = addInstruction(last, structs.x86IRNode("sete", structs.Var("al"), None))
+			last = addInstruction(last, structs.x86IRNode("movzbl", structs.Var("al"), node.output))
 		elif node.operation == "CompareNE":
 			last = addInstruction(last, structs.x86IRNode("cmpl", node.input1, node.input2))
-			last = addInstruction(last, structs.x86IRNode("setne", node.output, None))
+			last = addInstruction(last, structs.x86IRNode("setne", structs.Var("al"), None))
+			last = addInstruction(last, structs.x86IRNode("movzbl", structs.Var("al"), node.output))
 		elif node.operation == "Not":
-			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
-			last = addInstruction(last, structs.x86IRNode("notl", node.output, None))
+			last = addInstruction(last, structs.x86IRNode("cmpl", 0, node.input1))
+			last = addInstruction(last, structs.x86IRNode("sete", structs.Var("al"), None))
+			last = addInstruction(last, structs.x86IRNode("movzbl", structs.Var("al"), node.output))
 		elif node.operation == "CallFunc":
 			for var in reversed(node.input2):
 				last = addInstruction(last, structs.x86IRNode("pushl", var, None))
 			last = addInstruction(last, structs.x86IRNode("call", node.input1, None))
-			last = addInstruction(last, structs.x86IRNode("movl", structs.Var("eax"), node.output))
+			if node.output != None:
+				last = addInstruction(last, structs.x86IRNode("movl", structs.Var("eax"), node.output))
 			last = addInstruction(last, structs.x86IRNode("addl", 4*len(node.input2), structs.Esp()))
 
 		else:

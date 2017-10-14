@@ -11,7 +11,7 @@ def checkSpills(flatAssem, graph, variables):
 			working.thenNext = result[0]
 			unspillable.extend(result[1])
 			result = checkSpills(working.elseNext, graph, variables)
-			working.thenNext = result[0]
+			working.elseNext = result[0]
 			unspillable.extend(result[1])
 		elif isinstance(working.var1, structs.Var) and isinstance(working.var2, structs.Var):
 			if not graph[working.var1.name].color in registers:

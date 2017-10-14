@@ -77,12 +77,9 @@ def printLinkedList(node):
 		node = node.next
 
 def getLast(node):
-	i = 0
 	if node != None:
 		while node.next != None:
-			print node
 			node = node.next
-			i += 1
 	return node
 	
 def getFirst(node):

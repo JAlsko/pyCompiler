@@ -69,7 +69,7 @@ def explicate(ast, variables):
 		actions.append(InjectFrom(Const(INT), Add((ProjectTo(Const(INT), x),ProjectTo(Const(INT),y)))))
 		conditions.append(qAnd(Compare(GetTag(x), [('==', Const(BIG))]), Compare(GetTag(y), [('==', Const(BIG))]), variables))
 		actions.append(InjectFrom(Const(BIG),CallFunc("add", [ProjectTo(Const(BIG), x), ProjectTo(Const(BIG), y)])))
-		actions.append(CallFunc("Abort", []))
+		actions.append(CallFunc("abort", []))
 		return Let(x, explicate(ast.left, variables), Let(y, explicate(ast.right, variables), ifElseChain(conditions,actions)))
 	elif isinstance(ast, Compare):
 		x = newVariable(variables)
@@ -79,8 +79,8 @@ def explicate(ast, variables):
 		conditions.append(qOr(qAnd(Compare(GetTag(x), [('==', Const(INT))]), Compare(GetTag(y), [('==', Const(INT))]), variables),qAnd(Compare(GetTag(x), [('==', Const(BOOL))]), Compare(GetTag(y), [('==', Const(BOOL))]), variables), variables))
 		actions.append(InjectFrom(Const(BOOL), Compare(ProjectTo(Const(INT), x),[(ast.ops[0][0],ProjectTo(Const(INT),y))])))
 		conditions.append(qAnd(Compare(GetTag(x), [('==', Const(BIG))]), Compare(GetTag(y), [('==', Const(BIG))]), variables))
-		actions.append(InjectFrom(Const(BIG),CallFunc("equal_pyobj", [x, y])))
-		actions.append(CallFunc("Abort", []))
+		actions.append(InjectFrom(Const(BOOL),CallFunc("equal", [ProjectTo(Const(BIG), x), ProjectTo(Const(BIG), y)])))
+		actions.append(CallFunc("abort", []))
 		return Let(x, explicate(ast.expr, variables), Let(y, explicate(ast.ops[0][1], variables), ifElseChain(conditions,actions)))
 	elif isinstance(ast, And):
 		x = newVariable(variables)
@@ -102,7 +102,7 @@ def explicate(ast, variables):
 		newArgs = []
 		for arg in ast.args:
 			newArgs.append(explicate(arg, variables))
-		return CallFunc(ast.node, newArgs)
+		return InjectFrom(Const(INT), CallFunc(ast.node.name, newArgs))
 	elif isinstance(ast, List):
 		newNodes = []
 		for node in ast.nodes:
@@ -121,5 +121,3 @@ def explicate(ast, variables):
 	else:
 		raise Exception("No AST match: " + str(ast))
 
-
-#Subscript(Name('dict1'), 'OP_APPLY', [Const(1)])

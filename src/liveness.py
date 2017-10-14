@@ -6,7 +6,7 @@ def setLiveness(flatAssem, live):
 	while working != None:
 		working.liveness = set(liveNow)
 
-		if working.operation == "movl":
+		if working.operation in ["movl", "movzbl"]:
 			if isinstance(working.var2, structs.Var):
 				liveNow.discard(working.var2.name)
 			if isinstance(working.var1, structs.Var):
@@ -29,7 +29,7 @@ def setLiveness(flatAssem, live):
 		elif working.operation == "setne":
 			if isinstance(working.var1, structs.Var):
 				liveNow.discard(working.var1.name)
-		elif working.operation == "xorl":
+		elif working.operation == "orl":
 			if isinstance(working.var1, structs.Var):
 				liveNow.add(working.var1.name)
 		elif working.operation == "pushl":
@@ -39,7 +39,7 @@ def setLiveness(flatAssem, live):
 			pass
 		elif working.operation == "notl":
 			pass
-		elif working.operation == "shll":
+		elif working.operation == "sall":
 			pass
 		elif working.operation == "sarl":
 			pass

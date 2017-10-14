@@ -257,18 +257,24 @@ def flattenRecurs(ast, variables):
 				result[0].prev = last
 		output = newVariable(variables, None)
 		tmp = newVariable(variables, None)
+		tmp2 = newVariable(variables, None)
 		injectNode = structs.flatNode("InjectFrom", None, None, tmp, len(ast.nodes), 0)
-		listNode = structs.flatNode("CallFunc", None, injectNode, output, "create_list", [tmp])
+		listNode = structs.flatNode("CallFunc", None, injectNode, tmp2, "create_list", [tmp])
+		injectNode2 = structs.flatNode("InjectFrom", None, listNode, output, tmp2, 3)
 		injectNode.next = listNode
+		listNode.next = injectNode2
 		if first == None:
 			first = injectNode
 		else:
 			last = structs.getLast(first)
 			last.next = injectNode
 			injectNode.prev = last
-		last = listNode
+		last = injectNode2
 		for i in range(0, len(listElem)):
-			last.next = structs.flatNode("CallFunc", None, last, None, "set_subscript", [output, i, listElem[i]])
+			tmp = newVariable(variables, None)
+			last.next = structs.flatNode("InjectFrom", None, last, tmp, i, 0)
+			last = last.next
+			last.next = structs.flatNode("CallFunc", None, last, None, "set_subscript", [output, tmp, listElem[i]])
 			last = last.next
 		return first, output
 	elif isinstance(ast, Dict):
@@ -293,14 +299,17 @@ def flattenRecurs(ast, variables):
 				last.next = result[0]
 				result[0].prev = last
 		output = newVariable(variables, None)
-		dictNode = structs.flatNode("CallFunc", None, None, output, "create_dict", [])
+		tmp = newVariable(variables, None)
+		dictNode = structs.flatNode("CallFunc", None, None, tmp, "create_dict", [])
+		injectNode = structs.flatNode("InjectFrom", None, dictNode, output, tmp, 3)
+		dictNode.next = injectNode
 		if first == None:
 			first = dictNode
 		else:
 			last = structs.getLast(first)
 			last.next = dictNode
 			dictNode.prev = last
-		last = dictNode
+		last = injectNode
 		for key in dictElem:
 			last.next = structs.flatNode("CallFunc", None, last, None, "set_subscript", [output, key, dictElem[key]])
 			last = last.next
