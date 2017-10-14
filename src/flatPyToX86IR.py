@@ -25,24 +25,30 @@ def createAssembly(flatAst):
 			last = addInstruction(last, structs.x86IRNode("negl", node.output, None))
 		elif node.operation == "InjectFrom":
 			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
-			last = addInstruction(last, structs.x86IRNode("shll", 2, node.output))
-			last = addInstruction(last, structs.x86IRNode("xorl", node.input2, node.output))
+			if node.input2 != 3:
+				last = addInstruction(last, structs.x86IRNode("shll", 2, node.output))
+				last = addInstruction(last, structs.x86IRNode("xorl", node.input2, node.output))
+			else:
+				last = addInstruction(last, structs.x86IRNode("addl", 3, node.output))
 		elif node.operation == "ProjectTo":
 			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
-			last = addInstruction(last, structs.x86IRNode("sarl", 2, node.output))
+			if node.input2 != 3:
+				last = addInstruction(last, structs.x86IRNode("sarl", 2, node.output))
+			else:
+				last = addInstruction(last, structs.x86IRNode("andl", -4, node.output))
 		elif node.operation == "GetTag":
 			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
 			last = addInstruction(last, structs.x86IRNode("andl", 3, node.output))
 		elif node.operation == "IfExp":
 			last = addInstruction(last, structs.x86IRNode("IfExp", node.input1, node.output))
 			last.thenNext = createAssembly(node.thenNext)
-			last.thenNext.prev = last
 			last.elseNext = createAssembly(node.elseNext)
-			last.elseNext.prev = last
 		elif node.operation == "CompareEQ":
-			pass
+			last = addInstruction(last, structs.x86IRNode("cmpl", node.input1, node.input2))
+			last = addInstruction(last, structs.x86IRNode("sete", node.output, None))
 		elif node.operation == "CompareNE":
-			pass
+			last = addInstruction(last, structs.x86IRNode("cmpl", node.input1, node.input2))
+			last = addInstruction(last, structs.x86IRNode("setne", node.output, None))
 		elif node.operation == "Not":
 			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
 			last = addInstruction(last, structs.x86IRNode("notl", node.output, None))

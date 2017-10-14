@@ -255,7 +255,22 @@ def flattenRecurs(ast, variables):
 				last = structs.getLast(first)
 				last.next = result[0]
 				result[0].prev = last
-		return first, listElem
+		output = newVariable(variables, None)
+		tmp = newVariable(variables, None)
+		injectNode = structs.flatNode("InjectFrom", None, None, tmp, len(ast.nodes), 0)
+		listNode = structs.flatNode("CallFunc", None, injectNode, output, "create_list", [tmp])
+		injectNode.next = listNode
+		if first == None:
+			first = injectNode
+		else:
+			last = structs.getLast(first)
+			last.next = injectNode
+			injectNode.prev = last
+		last = listNode
+		for i in range(0, len(listElem)):
+			last.next = structs.flatNode("CallFunc", None, last, None, "set_subscript", [output, i, listElem[i]])
+			last = last.next
+		return first, output
 	elif isinstance(ast, Dict):
 		first = None
 		dictElem = {}
@@ -277,8 +292,19 @@ def flattenRecurs(ast, variables):
 				last = structs.getLast(first)
 				last.next = result[0]
 				result[0].prev = last
-
-		return first, dictElem
+		output = newVariable(variables, None)
+		dictNode = structs.flatNode("CallFunc", None, None, output, "create_dict", [])
+		if first == None:
+			first = dictNode
+		else:
+			last = structs.getLast(first)
+			last.next = dictNode
+			dictNode.prev = last
+		last = dictNode
+		for key in dictElem:
+			last.next = structs.flatNode("CallFunc", None, last, None, "set_subscript", [output, key, dictElem[key]])
+			last = last.next
+		return first, output
 	else:
 		raise Exception("No AST match: " + str(ast))
 	

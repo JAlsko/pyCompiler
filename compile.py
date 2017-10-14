@@ -14,6 +14,7 @@ import src.spill as spill
 import src.printAssembly as printAssem
 import src.explicate as explicate
 import src.typeCheck as typeCheck
+import src.ifFlatten as ifFlat
 import pprint
 
 def main():
@@ -36,15 +37,15 @@ def main():
 		flatAssem = tox86IR.createAssembly(flatAst)
 		if '-flatassem' in sys.argv:
 			structs.printLLwithIf(flatAssem, 0)
-		'''
 		if '-vars' in sys.argv:
 			print structs.setToStr(variables)
+		liveness.setLiveness(flatAssem, set([]))
 		unspillable = []
 		while True:
-			liveness.setLiveness(flatAssem)
+			liveness.setLiveness(flatAssem, set([]))
 			if '-liveness' in sys.argv:
-				structs.printLinkedList(flatAssem)
-			nodeGraph = graph.createGraph(flatAssem, variables, unspillable)
+				structs.printLLwithIf(flatAssem, 0)
+			nodeGraph = graph.createGraphWrapper(flatAssem, variables, unspillable)
 			if '-graph' in sys.argv:
 				print structs.dictToStr(nodeGraph)
 			numColors = graph.colorGraph(nodeGraph)
@@ -56,8 +57,10 @@ def main():
 			if not new_unspillable:
 				break;
 			unspillable.extend(new_unspillable)
-		printAssem.createAssembly(sys.argv[1][:-2] + "s", flatAssem, nodeGraph, numColors)
-		'''
+		finalFlatAssem = ifFlat.ifFlatten(flatAssem, [])
+		if '-ifFlat' in sys.argv:
+			print structs.printLinkedList(finalFlatAssem)
+		printAssem.createAssembly(sys.argv[1][:-2] + "s", finalFlatAssem, nodeGraph, numColors)
 
 		
 main()

@@ -78,19 +78,28 @@ def heapSwap(heap, loc1, loc2):
 def updateLocation(heap, loc):
 	pass
 
-
-def createGraph(x86IR, variables, unspillable):
-	nodes = {"eax":GraphNode(True), "ecx":GraphNode(True), "edx":GraphNode(True), "al":GraphNode(True), "cl":GraphNode(True)}
-	nodes["eax"].edges.add(nodes["al"])
-	nodes["al"].edges.add(nodes["eax"])	
-	nodes["ecx"].edges.add(nodes["cl"])
-	nodes["cl"].edges.add(nodes["ecx"])
+def createGraphWrapper(x86IR, variables, unspillable):
+	nodes = {"eax":GraphNode(True), "ecx":GraphNode(True), "edx":GraphNode(True)}
 
 	for var in variables:
 		spill = False
 		if var in unspillable:
 			spill = True
 		nodes[var.name] = GraphNode(True)
+	createGraph(x86IR, nodes)
+	return nodes
+
+def addEdge(var1, var2, nodes):
+	nodes[var1].edges.add(var2)
+	nodes[var2].edges.add(var1)
+
+def addEdges(modVar, liveness, nodes):
+	if isinstance(modVar, structs.Var):
+		for var in liveness:
+			if not (modVar.name == var):
+				addEdge(modVar.name, var, nodes)
+
+def createGraph(x86IR, nodes):
 	working = x86IR
 	while (working != None):
 		if working.operation == "movl":
@@ -99,37 +108,26 @@ def createGraph(x86IR, variables, unspillable):
 					if not (working.var2.name == var):
 						if isinstance(working.var1, structs.Var):
 							if not working.var1.name == var:
-								nodes[working.var2.name].edges.add(var)
-								nodes[var].edges.add(working.var2.name)
+								addEdge(working.var2.name, var, nodes)
 						else:
-							nodes[working.var2.name].edges.add(var)
-							nodes[var].edges.add(working.var2.name)
-		elif working.operation == "addl":
-			if isinstance(working.var2, structs.Var):
-				for var in working.liveness:
-					if not (working.var2.name == var):
-						nodes[working.var2.name].edges.add(var)
-						nodes[var].edges.add(working.var2.name)
-		elif working.operation == "negl":
-			if isinstance(working.var1, structs.Var):
-				for var in working.liveness:
-					if not (working.var1.name == var):
-						nodes[working.var1.name].edges.add(var)
-						nodes[var].edges.add(working.var1.name)
+							addEdge(working.var2.name, var, nodes)
+		elif working.operation == "IfExp":
+			addEdges(working.var1, working.liveness, nodes)
+			createGraph(working.thenNext, nodes)
+			createGraph(working.elseNext, nodes)
+		elif working.operation in ["addl", "andl", "shll", "sarl", "xorl"]:
+			addEdges(working.var2, working.liveness, nodes)
+		elif working.operation in ["negl", "notl", "sete", "setne"]:
+			addEdges(working.var1, working.liveness, nodes)
 		elif working.operation == "call":
 			for var in working.liveness:
 				nodes[var].edges.add("eax")
-				nodes[var].edges.add("al")
 				nodes[var].edges.add("ecx")
-				nodes[var].edges.add("cl")
 				nodes[var].edges.add("edx")
 				nodes["eax"].edges.add(var)
-				nodes["al"].edges.add(var)
 				nodes["ecx"].edges.add(var)
-				nodes["cl"].edges.add(var)
 				nodes["edx"].edges.add(var)
 		working = working.next
-	return nodes
 
 def color(saturation, colors):
 	for color in colors:
@@ -147,9 +145,7 @@ def saturate(node, color, nodes):
 def colorGraph(nodes):
 	colors = ["%eax", "%ecx", "%edx", "%ebx", "%edi", "%esi"]
 	saturate(nodes["eax"],"%eax", nodes)
-	saturate(nodes["al"],"%eax", nodes)
 	saturate(nodes["ecx"],"%ecx", nodes)
-	saturate(nodes["cl"],"%ecx", nodes)
 	saturate(nodes["edx"],"%edx", nodes)
 
 	while True:

@@ -43,7 +43,10 @@ def explicate(ast, variables):
 	elif isinstance(ast, Printnl):
 		return Discard(CallFunc("print_any", [explicate(ast.nodes[0], variables)]))
 	elif isinstance(ast, Assign):
-		return Assign([explicate(ast.nodes[0], variables)], explicate(ast.expr, variables))
+		if isinstance(ast.nodes[0], Subscript):
+			return CallFunc("set_subscript", [explicate(ast.nodes[0].expr, variables), explicate(ast.nodes[0].subs[0], variables), explicate(ast.expr, variables)])
+		else:
+			return Assign([explicate(ast.nodes[0], variables)], explicate(ast.expr, variables))
 	elif isinstance(ast, AssName):
 		return ast
 	elif isinstance(ast, Discard):
@@ -111,7 +114,8 @@ def explicate(ast, variables):
 			newItems.append((explicate(item[0],variables),explicate(item[1],variables)))
 		return Dict(newItems)
 	elif isinstance(ast, Subscript):
-		return CallFunc("get_subscript", [explicate(ast.expr, variables),explicate(ast.subs[0], variables)])
+		if ast.flags == 'OP_APPLY':
+			return CallFunc("get_subscript", [explicate(ast.expr, variables),explicate(ast.subs[0], variables)])
 	elif isinstance(ast, IfExp):
 		return IfExp(ProjectTo(Const(BOOL),explicate(ast.test, variables)), explicate(ast.then, variables), explicate(ast.else_, variables))
 	else:

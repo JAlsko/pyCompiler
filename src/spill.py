@@ -6,7 +6,14 @@ def checkSpills(flatAssem, graph, variables):
 	retAssem = flatAssem
 	unspillable = []
 	while working != None:
-		if isinstance(working.var1, structs.Var) and isinstance(working.var2, structs.Var):
+		if working.operation == "IfExp":
+			result = checkSpills(working.thenNext, graph, variables)
+			working.thenNext = result[0]
+			unspillable.extend(result[1])
+			result = checkSpills(working.elseNext, graph, variables)
+			working.thenNext = result[0]
+			unspillable.extend(result[1])
+		elif isinstance(working.var1, structs.Var) and isinstance(working.var2, structs.Var):
 			if not graph[working.var1.name].color in registers:
 				if not graph[working.var2.name].color in registers:
 					new_var = structs.newVariable(variables, None)

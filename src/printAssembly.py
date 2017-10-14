@@ -29,7 +29,7 @@ def createAssembly(targetFile, flatAssem, graph, numColors):
 			numColors += 1
 		outputFile.write("\tsubl $" + str(numColors * 4) + ", %esp\n")
 		while working != None:
-			if isinstance(working.var1, structs.Var) and isinstance(working.var2, structs.Var) and str(graph[working.var1.name].color) == str(graph[working.var2.name].color) and working.operation == "movl"):
+			if isinstance(working.var1, structs.Var) and isinstance(working.var2, structs.Var) and str(graph[working.var1.name].color) == str(graph[working.var2.name].color) and working.operation == "movl":
 				working = working.next
 			else:
 				outputFile.write("\t" + working.operation + " ")
