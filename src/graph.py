@@ -5,7 +5,7 @@ class GraphNode():
 		self.saturation = set([])
 		self.edges = set([])
 		self.unspillable = _unspillable
-		self.qkey = None
+		self.qkey = -1
 	def __str__(self):
 		return "GraphNode(" + str(self.color) + ", " + str(self.saturation) + ", " + str(self.unspillable) + ", " + str(self.edges) + ")"
 
@@ -21,15 +21,16 @@ def insertHeap(heap, obj, value):
 	return increment(heap, len(heap) - 1, value)
 
 def increment(heap, loc, new_value):
-	parent_loc = ((loc + 1) / 2) - 1
-	if parent_loc != -1 and new_value > heap[parent_loc].value:
-		holder = heap[parent_loc]
-		heap[parent_loc] = heap[loc]
-		heap[loc] = holder
-		return increment(heap, parent_loc, new_value)
-	else:
-		heap[loc].value = new_value
-		return loc
+	if loc != -1:
+		parent_loc = ((loc + 1) / 2) - 1
+		if parent_loc != -1 and new_value > heap[parent_loc].value:
+			heapSwap(heap, parent_loc, loc)
+			updateLocation(heap, loc)
+			return increment(heap, parent_loc, new_value)
+		else:
+			heap[loc].value = new_value
+			updateLocation(heap, loc)
+			return loc
 
 def pop(heap):
 	if not heap:
@@ -76,7 +77,7 @@ def heapSwap(heap, loc1, loc2):
 
 
 def updateLocation(heap, loc):
-	pass
+	heap[loc].object.qkey = loc;
 
 def createGraphWrapper(x86IR, variables, unspillable):
 	nodes = {"eax":GraphNode(True), "ecx":GraphNode(True), "edx":GraphNode(True), "al":GraphNode(True)}
@@ -137,27 +138,36 @@ def color(saturation, colors):
 	colors.append(new_color)
 	return new_color
 
-def saturate(node, color, nodes):
+def saturate(node, color, nodes, queue):
 	node.color = color
 	for nodekey in node.edges:
 		nodes[nodekey].saturation.add(color)
+		increment(queue, nodes[nodekey].qkey, (nodes[nodekey].unspillable, len(nodes[nodekey].saturation)))
 
 def colorGraph(nodes):
 	colors = ["%eax", "%ecx", "%edx", "%ebx", "%edi", "%esi"]
-	saturate(nodes["eax"],"%eax", nodes)
-	saturate(nodes["al"],"%eax", nodes)
-	saturate(nodes["ecx"],"%ecx", nodes)
-	saturate(nodes["edx"],"%edx", nodes)
+
+	queue = []
+	for node in nodes:
+		if not node in ["eax", "al", "ecx", "edx"]:
+			nodes[node].qkey = insertHeap(queue, nodes[node], (nodes[node].unspillable, 0))
+
+	saturate(nodes["eax"],"%eax", nodes, queue)
+	saturate(nodes["al"],"%eax", nodes, queue)
+	saturate(nodes["ecx"],"%ecx", nodes, queue)
+	saturate(nodes["edx"],"%edx", nodes, queue)
 
 	while True:
+		next_node = pop(queue)
+		"""
 		max_saturation = (False, -1)
-		next_node = None
 		for node in nodes:
 			if nodes[node].color == None:
 				if (nodes[node].unspillable, len(nodes[node].saturation)) > max_saturation:
 					max_saturation = (nodes[node].unspillable, len(nodes[node].saturation))
 					next_node = node
+					"""
 		if next_node == None:
 			break
-		saturate(nodes[next_node], color(nodes[next_node].saturation, colors), nodes)
+		saturate(next_node, color(next_node.saturation, colors), nodes, queue)
 	return len(colors) - 6
