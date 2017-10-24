@@ -54,7 +54,7 @@ def explicate(ast, variables):
 		return Discard(CallFunc("print_any", [explicate(ast.nodes[0], variables)]))
 	elif isinstance(ast, Assign):
 		if isinstance(ast.nodes[0], Subscript):
-			return CallFunc("set_subscript", [explicate(ast.nodes[0].expr, variables), explicate(ast.nodes[0].subs[0], variables), explicate(ast.expr, variables)])
+			return Discard(CallFunc("set_subscript", [explicate(ast.nodes[0].expr, variables), explicate(ast.nodes[0].subs[0], variables), explicate(ast.expr, variables)]))
 		else:
 			return Assign([explicate(ast.nodes[0], variables)], explicate(ast.expr, variables))
 	elif isinstance(ast, AssName):
@@ -82,16 +82,19 @@ def explicate(ast, variables):
 		actions.append(CallFunc("abort", []))
 		return Let(x, explicate(ast.left, variables), Let(y, explicate(ast.right, variables), ifElseChain(conditions,actions)))
 	elif isinstance(ast, Compare):
-		x = newVariable(variables)
-		y = newVariable(variables)
-		conditions = []
-		actions = []
-		conditions.append(qOr(qAnd(Compare(GetTag(x), [('==', Const(INT))]), Compare(GetTag(y), [('==', Const(INT))]), variables),qAnd(Compare(GetTag(x), [('==', Const(BOOL))]), Compare(GetTag(y), [('==', Const(BOOL))]), variables), variables))
-		actions.append(InjectFrom(Const(BOOL), Compare(ProjectTo(Const(INT), x),[(ast.ops[0][0],ProjectTo(Const(INT),y))])))
-		conditions.append(qAnd(Compare(GetTag(x), [('==', Const(BIG))]), Compare(GetTag(y), [('==', Const(BIG))]), variables))
-		actions.append(InjectFrom(Const(BOOL),CallFunc("equal", [ProjectTo(Const(BIG), x), ProjectTo(Const(BIG), y)])))
-		actions.append(CallFunc("abort", []))
-		return Let(x, explicate(ast.expr, variables), Let(y, explicate(ast.ops[0][1], variables), ifElseChain(conditions,actions)))
+		if ast.ops[0][0] != "is":
+			x = newVariable(variables)
+			y = newVariable(variables)
+			conditions = []
+			actions = []
+			conditions.append(qOr(qAnd(Compare(GetTag(x), [('==', Const(INT))]), Compare(GetTag(y), [('==', Const(INT))]), variables),qAnd(Compare(GetTag(x), [('==', Const(BOOL))]), Compare(GetTag(y), [('==', Const(BOOL))]), variables), variables))
+			actions.append(InjectFrom(Const(BOOL), Compare(ProjectTo(Const(INT), x),[(ast.ops[0][0],ProjectTo(Const(INT),y))])))
+			conditions.append(qAnd(Compare(GetTag(x), [('==', Const(BIG))]), Compare(GetTag(y), [('==', Const(BIG))]), variables))
+			actions.append(InjectFrom(Const(BOOL),CallFunc("equal", [ProjectTo(Const(BIG), x), ProjectTo(Const(BIG), y)])))
+			actions.append(CallFunc("abort", []))
+			return Let(x, explicate(ast.expr, variables), Let(y, explicate(ast.ops[0][1], variables), ifElseChain(conditions,actions)))
+		else:
+			return InjectFrom(Const(BOOL), Compare(explicate(ast.expr, variables), [("==", explicate(ast.ops[0][1], variables))]))
 	elif isinstance(ast, And):
 		x = newVariable(variables)
 		return Let(x, explicate(ast.nodes[0], variables), IfExp(getBool(x, variables), explicate(ast.nodes[1], variables), x))

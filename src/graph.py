@@ -8,6 +8,8 @@ class GraphNode():
 		self.qkey = -1
 	def __str__(self):
 		return "GraphNode(" + str(self.color) + ", " + str(self.saturation) + ", " + str(self.unspillable) + ", " + str(self.edges) + ")"
+	def __repr__(self):
+		return "GraphNode(" + str(self.color) + ", " + str(self.saturation) + ", " + str(self.unspillable) + ", " + str(self.edges) + ")"
 
 class heapElement():
 	def __init__(self, object_):
@@ -41,6 +43,7 @@ def pop(heap):
 		del heap[-1]
 		if heap:
 			shiftDown(heap, 0)
+		result.qkey = -1
 		return result
 
 def shiftDown(heap, loc):

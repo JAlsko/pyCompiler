@@ -43,9 +43,14 @@ def typeCheck(ast, variables):
 		ret = INT
 	elif isinstance(ast, Compare):
 		valid_type = INT
-		recived_types.append(typeCheck(ast.expr, variables))
-		recived_types.append(typeCheck(ast.ops[0][1], variables))
-		ret = BOOL
+		typ1 = typeCheck(ast.expr, variables)
+		typ2 = typeCheck(ast.ops[0][1], variables)
+		if typ1 == typ2:
+			return BOOL
+		elif typ1 == FUNCRET:
+			return BOOL
+		elif typ2 == FUNCRET:
+			return BOOL
 	elif isinstance(ast, UnarySub):
 		valid_type = INT
 		recived_types.append(typeCheck(ast.expr, variables))
