@@ -249,12 +249,13 @@ def flattenRecurs(ast, variables):
 		for node in ast.nodes:
 			result = flattenRecurs(node, variables)
 			listElem.append(result[1])
-			if first == None:
-				first = result[0]
-			else:
-				last = structs.getLast(first)
-				last.next = result[0]
-				result[0].prev = last
+			if result[0] != None:
+				if first == None:
+					first = result[0]
+				else:
+					last = structs.getLast(first)
+					last.next = result[0]
+					result[0].prev = last
 		output = newVariable(variables, None)
 		tmp = newVariable(variables, None)
 		tmp2 = newVariable(variables, None)
@@ -281,8 +282,9 @@ def flattenRecurs(ast, variables):
 		first = None
 		dictElem = {}
 		for item in ast.items:
-			result = flattenRecurs(item[0], variables)
-			key = result[1]
+
+			result = flattenRecurs(item[1], variables)
+			elem = result[1]
 			if first == None:
 				first = result[0]
 			else:
@@ -290,8 +292,8 @@ def flattenRecurs(ast, variables):
 				last.next = result[0]
 				result[0].prev = last
 
-			result = flattenRecurs(item[1], variables)
-			dictElem[key] = result[1]
+			result = flattenRecurs(item[0], variables)
+			dictElem[result[1]] = elem
 			if first == None:
 				first = result[0]
 			else:
