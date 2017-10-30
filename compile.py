@@ -15,6 +15,7 @@ import src.printAssembly as printAssem
 import src.explicate as explicate
 import src.typeCheck as typeCheck
 import src.ifFlatten as ifFlat
+import src.uniquify as uniq
 import pprint
 
 def main():
@@ -27,6 +28,9 @@ def main():
 		ast = compiler.parse(program)
 		if '-ast' in sys.argv:
 			print ast
+		uniqAst = uniq.uniquifyWrapper(ast)
+		if '-uniqast' in sys.argv:
+			print uniqAst
 		explicateAst = explicate.explicate(ast, {})
 		if '-explicate' in sys.argv:
 			print explicateAst
