@@ -31,9 +31,11 @@ def main():
 		uniqAst = uniq.uniquifyWrapper(ast)
 		if '-uniqast' in sys.argv:
 			print uniqAst
-		explicateAst = explicate.explicate(ast, {})
+		explicateAst = explicate.explicate(uniqAst, {})
 		if '-explicate' in sys.argv:
 			print explicateAst
+
+		'''
 		typeCheck.typeCheck(explicateAst, {})
 		flatAst, variables = flatten.flatten(explicateAst)
 		if '-flatpy' in sys.argv:
@@ -64,7 +66,7 @@ def main():
 		finalFlatAssem = ifFlat.ifFlatten(flatAssem, [])
 		if '-ifFlat' in sys.argv:
 			print structs.printLinkedList(finalFlatAssem)
-		printAssem.createAssembly(sys.argv[1][:-2] + "s", finalFlatAssem, nodeGraph, numColors)
+		printAssem.createAssembly(sys.argv[1][:-2] + "s", finalFlatAssem, nodeGraph, numColors)'''
 
 		
 main()

@@ -33,7 +33,7 @@ def uniquify(ast, variables):
 	elif isinstance(ast, Printnl):
 		return Printnl([uniquify(ast.nodes[0], variables)], ast.dest)
 	elif isinstance(ast, Assign):
-		return Assign(uniquify(ast.nodes[0], variables), uniquify(ast.expr, variables))
+		return Assign([uniquify(ast.nodes[0], variables)], uniquify(ast.expr, variables))
 	elif isinstance(ast, AssName):
 		return AssName(newVariable(ast.name, variables, True), ast.flags)
 	elif isinstance(ast, Discard):

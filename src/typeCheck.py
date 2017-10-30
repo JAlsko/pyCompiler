@@ -113,4 +113,3 @@ def typeCheck(ast, variables):
 			raise Exception("Type mis-match:" + str(ast) + ", " + str(i) + ", " + str(valid_type))
 	return ret
 
-	IfExp(ProjectTo(Const(1), Name('5')), Compare(GetTag(Name('1')), [('==', Const(3))]), Name('5'))

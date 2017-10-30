@@ -113,7 +113,7 @@ def explicate(ast, variables):
 		newArgs = []
 		for arg in ast.args:
 			newArgs.append(explicate(arg, variables))
-		return InjectFrom(Const(INT), CallFunc(ast.node.name, newArgs))
+		return InjectFrom(Const(INT), CallFunc(explicate(ast.node, variables), newArgs))
 	elif isinstance(ast, List):
 		newNodes = []
 		for node in ast.nodes:
@@ -130,6 +130,12 @@ def explicate(ast, variables):
 	elif isinstance(ast, IfExp):
 		x = newVariable(variables)
 		return IfExp(Let(x, explicate(ast.test, variables), getBool(x, variables)), explicate(ast.then, variables), explicate(ast.else_, variables))
+	elif isinstance(ast, Return):
+		return Return(explicate(ast.value, variables))
+	elif isinstance(ast, Lambda):
+		return Lambda(ast.argnames, ast.defaults, ast.flags, Stmt([Return(explicate(ast.code, variables))]))
+	elif isinstance(ast, Function):
+		return Assign([AssName(ast.name, 'OP_ASSIGN')],Lambda(ast.argnames, ast.defaults, ast.flags, explicate(ast.code, variables)))
 	else:
 		raise Exception("No AST match: " + str(ast))
 
