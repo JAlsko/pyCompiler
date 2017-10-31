@@ -30,15 +30,15 @@ def main():
 		ast = compiler.parse(program)
 		if '-ast' in sys.argv or '-all' in sys.argv:
 			print "---------------ast---------------"
-			print ast
+			structs.printAst(ast, 0)
 		uniqAst = uniq.uniquifyWrapper(ast)
 		if '-uniqast' in sys.argv or '-all' in sys.argv:	
 			print "-------------uniqAst-------------"
-			print uniqAst
+			structs.printAst(uniqAst, 0)
 		explicateAst = explicate.explicate(uniqAst, [])
 		if '-explicate' in sys.argv or '-all' in sys.argv:
 			print "----------explicateAst-----------"
-			print explicateAst
+			structs.printAst(explicateAst, 0)
 		heapVars = heapify.determineHeapify(explicateAst)
 		if '-heapvars' in sys.argv or '-all' in sys.argv:
 			print "------------heapVars-------------"
@@ -46,11 +46,11 @@ def main():
 		heapifiedAst = heapify.heapify(explicateAst, heapVars)
 		if '-heapast' in sys.argv or '-all' in sys.argv:
 			print "-------------heapAst-------------"
-			print heapifiedAst
+			structs.printAst(heapifiedAst, 0)
 		functions = close.closureWrapper(heapifiedAst)
 		if '-closure' in sys.argv or '-all' in sys.argv:
 			print "------------functions------------"
-			print structs.dictToStr(functions)
+			structs.printAst(functions, 0)
 		funcAssem = {}
 		nodeGraph = {}
 		numColors = {}

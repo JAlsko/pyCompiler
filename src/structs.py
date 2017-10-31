@@ -1,4 +1,8 @@
 import pprint
+import sys
+import compiler
+from compiler.ast import *
+from eStructs import *
 
 class flatNode():
 	def __init__(self, _operation, _next, _prev, _output, _input1, _input2):
@@ -78,6 +82,165 @@ def printLLwithIf(node, indent):
 			print string
 			printLLwithIf(node.elseNext, indent + 1)
 		node = node.next
+
+def indentPrint(str, indents):
+	string = ""
+	for i in range(0, indents):
+		string += "\t"
+	print string + str
+
+def printAst(ast, indents):
+	if isinstance(ast, Module):
+		indentPrint("Module(", indents)
+		printAst(ast.node, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Stmt):
+		indentPrint("Stmt(", indents)
+		printAst(ast.nodes, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Printnl):
+		indentPrint("Printnl(", indents)
+		printAst(ast.nodes, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Assign):
+		indentPrint("Assign(", indents)
+		printAst(ast.nodes, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.expr, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, AssName):
+		indentPrint("AssName(", indents)
+		printAst(ast.name, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.flags, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Discard):
+		indentPrint("Discard(", indents)
+		printAst(ast.expr, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Const):
+		indentPrint("Const(", indents)
+		indentPrint(str(ast.value), indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Bool):
+		indentPrint("Bool(", indents)
+		indentPrint(str(ast.value), indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Name):
+		indentPrint("Name(", indents)
+		printAst(ast.name, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Add):
+		indentPrint("Add(", indents)
+		printAst(ast.left, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.right, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Compare):
+		indentPrint("Compare(", indents)
+		printAst(ast.expr, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.ops, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, UnarySub):
+		indentPrint("UnarySub(", indents)
+		printAst(ast.expr, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Not):
+		indentPrint("Not(", indents)
+		printAst(ast.expr, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, CallFunc):
+		indentPrint("CallFunc(", indents)
+		printAst(ast.node, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.args, indents+1)
+		indentPrint(")", indents+1)
+	elif isinstance(ast, List):
+		indentPrint("List(", indents)
+		printAst(ast.nodes, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, list):
+		indentPrint("[", indents)
+		for node in ast:
+			printAst(node, indents)
+			indentPrint(",", indents)
+		indentPrint("]", indents)
+	elif isinstance(ast, Dict):
+		indentPrint("Dict(", indents)
+		printAst(ast.items, indents+1)
+		indentPrint(")")
+	elif isinstance(ast, tuple):
+		indentPrint("(", indents)
+		for node in ast:
+			printAst(node, indents+1)
+			indentPrint(",", indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, dict):
+		indentPrint("{", indents)
+		for key in ast:
+			indentPrint(key + ":", indents)
+			printAst(ast[key], indents+1)
+			indentPrint(",", indents)
+		indentPrint("}",indents)
+	elif isinstance(ast, IfExp):
+		indentPrint("IfExp(", indents)
+		printAst(ast.test, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.then, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.else_, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Let):
+		indentPrint("Let(", indents)
+		printAst(ast.var, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.rhs, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.body, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, InjectFrom):
+		indentPrint("InjectFrom(", indents)
+		printAst(ast.typ, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.arg, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, ProjectTo):
+		indentPrint("ProjectTo(", indents)
+		printAst(ast.typ, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.arg, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, GetTag):
+		indentPrint("GetTag(", indents)
+		printAst(ast.arg, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Lambda):
+		indentPrint("Lambda(", indents)
+		printAst(ast.argnames, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.code, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Function):
+		indentPrint("Function(", indents)
+		printAst(ast.name, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.argnames, indents+1)
+		indentPrint(",", indents+1)
+		printAst(ast.code, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, GlobalFuncName):
+		indentPrint("GlobalFuncName(", indents)
+		printAst(ast.name, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, Return):
+		indentPrint("Return(", indents)
+		printAst(ast.value, indents+1)
+		indentPrint(")", indents)
+	elif isinstance(ast, str):
+		indentPrint(ast, indents)
+	else:
+		raise Exception("No AST match: " + str(ast))
 
 def printLinkedList(node):
 	while node != None:
