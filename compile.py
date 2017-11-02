@@ -35,9 +35,12 @@ def main():
 		explicateAst = explicate.explicate(uniqAst, [])
 		if '-explicate' in sys.argv:
 			print explicateAst
-		heap_vars = heapify.determineHeapify(explicateAst)
+		heapVars = heapify.determineHeapify(explicateAst)
 		if '-heapvars' in sys.argv:
-			print heap_vars
+			print heapVars
+		heapifiedAst = heapify.heapify(explicateAst, heapVars)
+		if '-heapast' in sys.argv:
+			print heapifiedAst
 
 		'''
 		typeCheck.typeCheck(explicateAst, {})

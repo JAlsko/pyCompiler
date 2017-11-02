@@ -6,7 +6,7 @@ class Bool():
 	def __repr__(self):
 		return "Bool(" + str(self.value) + ")"
 
-class RuntimeFunc():
+class GlobalFuncName():
 	def __init__(self, _name):
 		self.name = _name
 	def __str__(self):

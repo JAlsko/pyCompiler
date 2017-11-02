@@ -61,7 +61,7 @@ def free_vars(ast, variables):
 		return free_vars(ast.arg, variables)
 	elif isinstance(ast, Lambda):
 		return set([])
-	elif isinstance(ast, RuntimeFunc):
+	elif isinstance(ast, GlobalFuncName):
 		return set([])
 	elif isinstance(ast, Return):
 		return free_vars(ast.value, variables)
@@ -120,7 +120,7 @@ def determineHeapify(ast):
 		return determineHeapify(ast.arg)
 	elif isinstance(ast, Lambda):
 		return determineHeapify(ast.code) | (free_vars(ast.code, set([])) - set(ast.argnames))
-	elif isinstance(ast, RuntimeFunc):
+	elif isinstance(ast, GlobalFuncName):
 		return set([])
 	elif isinstance(ast, Return):
 		return determineHeapify(ast.value)
@@ -128,9 +128,80 @@ def determineHeapify(ast):
 		raise Exception("No AST match: " + str(ast))
 
 
+def local_vars(ast, variables):
+	if isinstance(ast, Module):
+		return local_vars(ast.node, variables)
+	elif isinstance(ast, Stmt):
+		ret = set([])
+		for node in ast.nodes:
+			ret = ret | local_vars(node, variables)
+		return ret
+	elif isinstance(ast, Assign):
+		return local_vars(ast.expr, variables) | local_vars(ast.nodes[0], variables)
+	elif isinstance(ast, AssName):
+		if ast.name in variables:
+			return set([ast.name])
+		else:
+			return set([])
+	elif isinstance(ast, Discard):
+		return local_vars(ast.expr, variables)
+	elif isinstance(ast, Const):
+		return set([])
+	elif isinstance(ast, Bool):
+		return set([])
+	elif isinstance(ast, Name):
+		return set([])
+	elif isinstance(ast, Add):
+		return local_vars(ast.left, variables) | local_vars(ast.right, variables)
+	elif isinstance(ast, Compare):
+		return local_vars(ast.expr, variables) | local_vars(ast.ops[0][1], variables)
+	elif isinstance(ast, UnarySub):
+		return local_vars(ast.expr, variables)
+	elif isinstance(ast, Not):
+		return local_vars(ast.expr, variables)
+	elif isinstance(ast, CallFunc):
+		ret = local_vars(ast.node, variables)
+		for arg in ast.args:
+			ret = ret | local_vars(arg, variables)
+		return ret
+	elif isinstance(ast, List):
+		ret = set([])
+		for thing in ast.nodes:
+			ret = ret | local_vars(thing, variables)
+	elif isinstance(ast, Dict):
+		ret = set([])
+		for item in ast.items:
+			ret = ret | local_vars(item[0], variables) | local_vars(item[1], variables)
+		return ret
+	elif isinstance(ast, IfExp):
+		return local_vars(ast.test, variables) | local_vars(ast.then, variables) | determineHeapify(ast.else_)
+	elif isinstance(ast, Let):
+		return local_vars(ast.rhs, variables) | local_vars(ast.body, variables)
+	elif isinstance(ast, InjectFrom):
+		return local_vars(ast.arg, variables)
+	elif isinstance(ast, ProjectTo):
+		return local_vars(ast.arg, variables)
+	elif isinstance(ast, GetTag):
+		return local_vars(ast.arg, variables)
+	elif isinstance(ast, Lambda):
+		return set([])
+	elif isinstance(ast, GlobalFuncName):
+		return set([])
+	elif isinstance(ast, Return):
+		return local_vars(ast.value, variables)
+	else:
+		raise Exception("No AST match: " + str(ast))
+
 def heapify(ast, variables):
 	if isinstance(ast, Module):
-		return Module(ast.doc, heapify(ast.node, variables))
+		localVars = local_vars(ast.node, variables)
+		newStmts = []
+		for var in localVars:
+			newStmts.append(Assign([AssName(var, 'OP_ASSIGN')], List([Const(0)])))
+		oldStmts = heapify(ast.node, variables)
+		for stmt in oldStmts.nodes:
+			newStmts.append(stmt) 
+		return Module(ast.doc, Stmt(newStmts))
 	elif isinstance(ast, Stmt):
 		newStmts = []
 		for node in ast.nodes:
@@ -138,7 +209,7 @@ def heapify(ast, variables):
 		return Stmt(newStmts)
 	elif isinstance(ast, Assign):
 		if ast.nodes[0].name in variables:
-			return Discard(CallFunc(RuntimeFunc("set_subscript"), [Name(ast.nodes[0].name), Const(0), heapify(ast.expr, variables)]))
+			return Discard(CallFunc(GlobalFuncName("set_subscript"), [Name(ast.nodes[0].name), Const(0), heapify(ast.expr, variables)]))
 		else:
 			return Assign(ast.nodes, heapify(ast.expr, variables))
 	elif isinstance(ast, Discard):
@@ -149,7 +220,7 @@ def heapify(ast, variables):
 		return ast
 	elif isinstance(ast, Name):
 		if ast.name in variables:
-			CallFunc(RuntimeFunc("get_subscript"),[ast, Const(0)])
+			CallFunc(GlobalFuncName("get_subscript"),[ast, Const(0)])
 		else:
 			return ast
 	elif isinstance(ast, Add):
@@ -186,8 +257,23 @@ def heapify(ast, variables):
 	elif isinstance(ast, GetTag):
 		return GetTag(heapify(ast.arg, variables))
 	elif isinstance(ast, Lambda):
-		
-	elif isinstance(ast, RuntimeFunc):
+		newargnames = []
+		newStmts = []
+		for arg in ast.argnames:
+			if arg in variables:
+				newargnames.append(arg + "h")
+				newStmts.append(Assign([AssName(arg, 'OP_ASSIGN')], List([Const(0)])))
+				newStmts.append(Discard(CallFunc(GlobalFuncName("set_subscript"), [Name(arg), Const(0), Name(arg + "h")])))
+			else:
+				newargnames.append(arg)
+		localVars = local_vars(ast.code, variables)
+		for var in localVars:
+			newStmts.append(Assign([AssName(var, 'OP_ASSIGN')], List([Const(0)])))
+		oldStmts = heapify(ast.code, variables)
+		for stmt in oldStmts.nodes:
+			newStmts.append(stmt)
+		return Lambda(newargnames, ast.defaults, ast.flags, Stmt(newStmts))
+	elif isinstance(ast, GlobalFuncName):
 		return ast
 	elif isinstance(ast, Return):
 		return Return(heapify(ast.value, variables))
