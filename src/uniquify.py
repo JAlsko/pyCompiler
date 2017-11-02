@@ -13,7 +13,7 @@ def newVariable(name, variables, assignment):
 		for i in range(len(variables) - 1, 0, -1):
 			if name in variables[i]:
 				return variables[i][name]
-	new_var = str(variables[0])
+	new_var = "u" + str(variables[0])
 	variables[len(variables) - 1][name] = new_var
 	variables[0] += 1
 	return new_var
@@ -94,3 +94,5 @@ def uniquify(ast, variables):
 		return ret
 	else:
 		raise Exception("No AST match: " + str(ast))
+
+

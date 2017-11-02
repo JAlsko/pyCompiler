@@ -11,7 +11,10 @@ def free_vars(ast, variables):
 			ret = ret | free_vars(node, variables)
 		return ret
 	elif isinstance(ast, Assign):
-		return free_vars(ast.expr, variables)
+		return free_vars(ast.expr, variables) | free_vars(ast.nodes[0], variables)
+	elif isinstance(ast, AssName):
+		variables.add(ast.name)
+		return set([])
 	elif isinstance(ast, Discard):
 		return free_vars(ast.expr, variables)
 	elif isinstance(ast, Const):
@@ -19,7 +22,10 @@ def free_vars(ast, variables):
 	elif isinstance(ast, Bool):
 		return set([])
 	elif isinstance(ast, Name):
-		return set([])
+		if not ast.name in variables:
+			return set([ast.name])
+		else:
+			return set([])
 	elif isinstance(ast, Add):
 		return free_vars(ast.left, variables) | free_vars(ast.right, variables)
 	elif isinstance(ast, Compare):
@@ -35,7 +41,7 @@ def free_vars(ast, variables):
 		return ret
 	elif isinstance(ast, List):
 		ret = set([])
-		for thing in ast:
+		for thing in ast.nodes:
 			ret = ret | free_vars(thing, variables)
 	elif isinstance(ast, Dict):
 		ret = set([])
@@ -45,6 +51,7 @@ def free_vars(ast, variables):
 	elif isinstance(ast, IfExp):
 		return free_vars(ast.test, variables) | free_vars(ast.then, variables) | determineHeapify(ast.else_)
 	elif isinstance(ast, Let):
+		variables.add(ast.var.name)
 		return free_vars(ast.rhs, variables) | free_vars(ast.body, variables)
 	elif isinstance(ast, InjectFrom):
 		return free_vars(ast.arg, variables)
@@ -53,7 +60,11 @@ def free_vars(ast, variables):
 	elif isinstance(ast, GetTag):
 		return free_vars(ast.arg, variables)
 	elif isinstance(ast, Lambda):
-		return free_vars(ast.code, variables) | (free_vars(ast.code, []) - set(ast.argnames))
+		return set([])
+	elif isinstance(ast, RuntimeFunc):
+		return set([])
+	elif isinstance(ast, Return):
+		return free_vars(ast.value, variables)
 	else:
 		raise Exception("No AST match: " + str(ast))
 
@@ -90,7 +101,7 @@ def determineHeapify(ast):
 		return ret
 	elif isinstance(ast, List):
 		ret = set([])
-		for thing in ast:
+		for thing in ast.nodes:
 			ret = ret | determineHeapify(thing)
 	elif isinstance(ast, Dict):
 		ret = set([])
@@ -108,7 +119,77 @@ def determineHeapify(ast):
 	elif isinstance(ast, GetTag):
 		return determineHeapify(ast.arg)
 	elif isinstance(ast, Lambda):
-		return determineHeapify(ast.code) | (free_vars(ast.code, []) - set(ast.argnames))
+		return determineHeapify(ast.code) | (free_vars(ast.code, set([])) - set(ast.argnames))
+	elif isinstance(ast, RuntimeFunc):
+		return set([])
+	elif isinstance(ast, Return):
+		return determineHeapify(ast.value)
 	else:
 		raise Exception("No AST match: " + str(ast))
 
+
+def heapify(ast, variables):
+	if isinstance(ast, Module):
+		return Module(ast.doc, heapify(ast.node, variables))
+	elif isinstance(ast, Stmt):
+		newStmts = []
+		for node in ast.nodes:
+			newStmts.append(heapify(node, variables))
+		return Stmt(newStmts)
+	elif isinstance(ast, Assign):
+		if ast.nodes[0].name in variables:
+			return Discard(CallFunc(RuntimeFunc("set_subscript"), [Name(ast.nodes[0].name), Const(0), heapify(ast.expr, variables)]))
+		else:
+			return Assign(ast.nodes, heapify(ast.expr, variables))
+	elif isinstance(ast, Discard):
+		return Discard(heapify(ast.expr, variables))
+	elif isinstance(ast, Const):
+		return ast
+	elif isinstance(ast, Bool):
+		return ast
+	elif isinstance(ast, Name):
+		if ast.name in variables:
+			CallFunc(RuntimeFunc("get_subscript"),[ast, Const(0)])
+		else:
+			return ast
+	elif isinstance(ast, Add):
+		return Add((heapify(ast.left, variables), heapify(ast.right, variables)))
+	elif isinstance(ast, Compare):
+		return Compare(heapify(ast.expr, variables),[(ast.ops[0][0], heapify(ast.ops[0][1], variables))])
+	elif isinstance(ast, UnarySub):
+		return UnarySub(heapify(ast.expr, variables))
+	elif isinstance(ast, Not):
+		return Not(heapify(ast.expr, variables))
+	elif isinstance(ast, CallFunc):
+		newArgs = []
+		for arg in ast.args:
+			newArgs.append(heapify(arg, variables))
+		return CallFunc(heapify(ast.node, variables), newArgs)
+	elif isinstance(ast, List):
+		newElem = []
+		for elem in ast.nodes:
+			newElem.append(heapify(elem, variables))
+		return List(newElem)
+	elif isinstance(ast, Dict):
+		newItems = []
+		for item in ast.items:
+			newItems.append((heapify(item[0], variables), heapify(item[1], variables)))
+		return Dict(newItems)
+	elif isinstance(ast, IfExp):
+		return IfExp(heapify(ast.test, variables), heapify(ast.then, variables), heapify(ast.else_, variables))
+	elif isinstance(ast, Let):
+		return Let(heapify(ast.var, variables), heapify(ast.rhs, variables), heapify(ast.body, variables))
+	elif isinstance(ast, InjectFrom):
+		return InjectFrom(ast.typ, heapify(ast.arg, variables))
+	elif isinstance(ast, ProjectTo):
+		return ProjectTo(ast.typ, heapify(ast.arg, variables))
+	elif isinstance(ast, GetTag):
+		return GetTag(heapify(ast.arg, variables))
+	elif isinstance(ast, Lambda):
+		
+	elif isinstance(ast, RuntimeFunc):
+		return ast
+	elif isinstance(ast, Return):
+		return Return(heapify(ast.value, variables))
+	else:
+		raise Exception("No AST match: " + str(ast))

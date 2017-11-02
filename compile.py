@@ -16,6 +16,7 @@ import src.explicate as explicate
 import src.typeCheck as typeCheck
 import src.ifFlatten as ifFlat
 import src.uniquify as uniq
+import src.heapify as heapify
 import pprint
 
 def main():
@@ -31,9 +32,12 @@ def main():
 		uniqAst = uniq.uniquifyWrapper(ast)
 		if '-uniqast' in sys.argv:
 			print uniqAst
-		explicateAst = explicate.explicate(uniqAst, {})
+		explicateAst = explicate.explicate(uniqAst, [])
 		if '-explicate' in sys.argv:
 			print explicateAst
+		heap_vars = heapify.determineHeapify(explicateAst)
+		if '-heapvars' in sys.argv:
+			print heap_vars
 
 		'''
 		typeCheck.typeCheck(explicateAst, {})
