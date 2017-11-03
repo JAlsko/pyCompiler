@@ -50,40 +50,42 @@ def main():
 		functions = close.closureWrapper(heapifiedAst)
 		if '-closure' in sys.argv:
 			print "------------functions------------"
-			print functions
-
-		'''
-		typeCheck.typeCheck(explicateAst, {})
-		flatAst, variables = flatten.flatten(explicateAst)
-		if '-flatpy' in sys.argv:
-			structs.printLLwithIf(flatAst, 0)
-		flatAssem = tox86IR.createAssembly(flatAst)
-		if '-flatassem' in sys.argv:
-			structs.printLLwithIf(flatAssem, 0)
-		if '-vars' in sys.argv:
-			print structs.setToStr(variables)
-		liveness.setLiveness(flatAssem, set([]))
-		unspillable = []
-		while True:
-			liveness.setLiveness(flatAssem, set([]))
-			if '-liveness' in sys.argv:
+			print structs.dictToStr(functions)
+		funcAssem = {}
+		for func in functions:
+			#typeCheck.typeCheck(explicateAst, {})
+			print "----------------------------" + func + "----------------------------"
+			flatAst, variables = flatten.flatten(functions[func])
+			if '-flatpy' in sys.argv:
+				structs.printLLwithIf(flatAst, 0)
+			flatAssem = tox86IR.createAssembly(flatAst)
+			if '-flatassem' in sys.argv:
 				structs.printLLwithIf(flatAssem, 0)
-			nodeGraph = graph.createGraphWrapper(flatAssem, variables, unspillable)
-			if '-graph' in sys.argv:
-				print structs.dictToStr(nodeGraph)
-			numColors = graph.colorGraph(nodeGraph)
-			if '-colors' in sys.argv:
-				print structs.dictToStr(nodeGraph)
-			(flatAssem, new_unspillable) = spill.checkSpills(flatAssem, nodeGraph, variables)
-			if '-spills' in sys.argv:
-				print structs.setToStr(new_unspillable)
-			if not new_unspillable:
-				break;
-			unspillable.extend(new_unspillable)
-		finalFlatAssem = ifFlat.ifFlatten(flatAssem, [])
-		if '-ifFlat' in sys.argv:
-			print structs.printLinkedList(finalFlatAssem)
-		printAssem.createAssembly(sys.argv[1][:-2] + "s", finalFlatAssem, nodeGraph, numColors)'''
+			if '-vars' in sys.argv:
+				print structs.setToStr(variables)
+			liveness.setLiveness(flatAssem, set([]))
+			unspillable = []
+			while True:
+				liveness.setLiveness(flatAssem, set([]))
+				if '-liveness' in sys.argv:
+					structs.printLLwithIf(flatAssem, 0)
+				nodeGraph = graph.createGraphWrapper(flatAssem, variables, unspillable)
+				if '-graph' in sys.argv:
+					print structs.dictToStr(nodeGraph)
+				numColors = graph.colorGraph(nodeGraph)
+				if '-colors' in sys.argv:
+					print structs.dictToStr(nodeGraph)
+				(flatAssem, new_unspillable) = spill.checkSpills(flatAssem, nodeGraph, variables)
+				if '-spills' in sys.argv:
+					print structs.setToStr(new_unspillable)
+				if not new_unspillable:
+					break;
+				unspillable.extend(new_unspillable)
+			finalFlatAssem = ifFlat.ifFlatten(flatAssem, [])
+			if '-ifFlat' in sys.argv:
+				print structs.printLinkedList(finalFlatAssem)
+			funcAssem[func] = finalFlatAssem
+		#printAssem.createAssembly(sys.argv[1][:-2] + "s", finalFlatAssem, nodeGraph, numColors)'''
 
 		
 main()

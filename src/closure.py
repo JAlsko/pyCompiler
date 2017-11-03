@@ -19,7 +19,7 @@ def closureWrapper(ast):
 
 def closure(ast, functions, variables):
 	if isinstance(ast, Module):
-		main = closure(ast.node, functions, variables)
+		main = Lambda([], [], 0, closure(ast.node, functions, variables))
 		functions["main"] = main
 		return None
 	elif isinstance(ast, Stmt):
@@ -53,7 +53,7 @@ def closure(ast, functions, variables):
 			return CallFunc(ast.node, newArgs)
 		else:
 			new_var = newVariables(variables)
-			newArgs = [CallFunc(GlobalFuncName('get_free_vars'), new_var)]
+			newArgs = [CallFunc(GlobalFuncName('get_free_vars'), [new_var])]
 			for arg in ast.args:
 				newArgs.append(closure(arg, functions, variables))
 			return Let(new_var, closure(ast.node, functions, variables), CallFunc(CallFunc(GlobalFuncName('get_fun_ptr'), [new_var]), newArgs))
@@ -72,11 +72,13 @@ def closure(ast, functions, variables):
 		freeVars = free_vars(new_code, set([])) - set(ast.argnames)
 		newStmts = []
 		new_var = newVariables(variables)
-		for i in range(0, len(freeVars)):
-			newStmts.append(Assign([AssName(freeVars[i], 'OP_ASSIGN')], CallFunc(GlobalFuncName('get_subscript'),[new_var, Const(i)])))
+		i = 0
+		for var in freeVars:
+			newStmts.append(Assign([AssName(var, 'OP_ASSIGN')], CallFunc(GlobalFuncName('get_subscript'),[new_var, Const(i)])))
+			i += 1
 		for stmt in ast.code.nodes:
 			newStmts.append(stmt)
-		newargs = [new_var] + ast.argnames
+		newargs = [new_var.name] + ast.argnames
 		func_name = newFunction(functions)
 		functions[func_name] = Lambda(newargs, ast.defaults, ast.flags, new_code)
 		free_var_names = []
@@ -87,5 +89,15 @@ def closure(ast, functions, variables):
 		return ast
 	elif isinstance(ast, Return):
 		return Return(closure(ast.value, functions, variables))
+	elif isinstance(ast, List):
+		newElem = []
+		for elem in ast.nodes:
+			newElem.append(closure(elem, functions, variables))
+		return List(newElem)
+	elif isinstance(ast, Dict):
+		newItems = []
+		for item in ast.items:
+			newItems.append((closure(item[0], functions, variables), closure(item[1], functions, variables)))
+		return Dict(newItems)
 	else:
 		raise Exception("No AST match: " + str(ast))

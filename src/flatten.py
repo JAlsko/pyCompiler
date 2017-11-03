@@ -15,8 +15,16 @@ def newVariable(variables, name):
 def flattenRecurs(ast, variables):
 	#print str(ast)
 	#print ""
-	if isinstance(ast, Module):
-		return flattenRecurs(ast.node, variables)
+	if isinstance(ast, Lambda):
+		new_args = []
+		for var in ast.argnames:
+			new_args.append(newVariable(variables, var))
+		first = flattenRecurs(ast.code, variables)
+		last = structs.getLast(first)
+		if last != None:
+			last.next = structs.flatNode("FunctionEnd", None, last, None, None, None)
+			return structs.flatNode("FunctionStart", first, None, None, new_args, None)
+		return structs.flatNode("FunctionStart", structs.flatNode("FunctionEnd", None, None, None, None, None), None, None, new_args, None)
 	elif isinstance(ast, Stmt):
 		first = None
 		last = None
@@ -143,18 +151,33 @@ def flattenRecurs(ast, variables):
 			last.next = node
 		return first, output
 
+	elif isinstance(ast, Return):
+		result = flattenRecurs(ast.value, variables)
+		output = newVariable(variables, None)
+		if result[0] == None:
+			first = structs.flatNode("Return", None, None, None, result[1], None)
+		else:
+			first = result[0]
+			last = structs.getLast(first)
+			node = structs.flatNode("Return", None, last, None, result[1], None)
+			last.next = node
+		return first
+
 	elif isinstance(ast, CallFunc):
 		varsList = []
 		first = None
+		print ast
 		for arg in ast.args:
 			result = flattenRecurs(arg, variables)
+			print result
 			varsList.append(result[1])
-			if first == None:
-				first = result[0]
-			else:
-				last = structs.getLast(first)
-				last.next = result[0]
-				result[0].prev = last
+			if result[0] != None:
+				if first == None:
+					first = result[0]
+				else:
+					last = structs.getLast(first)
+					last.next = result[0]
+					result[0].prev = last
 		output = newVariable(variables, None)
 		funcNode = structs.flatNode("CallFunc", None, None, output, ast.node, varsList)
 		if first == None:

@@ -7,6 +7,8 @@ INT = 0
 BOOL = 1
 BIG = 3
 
+runtime_func = ["input"]
+
 '''
 Screenshot from 2017-10-12 11-11-04Need Let(x, e1, e2), GetTag(x), InjectFrom(TAG,e), and ProjectTo(TAG,e)
 '''
@@ -69,6 +71,8 @@ def explicate(ast, variables):
 			return InjectFrom(Const(BOOL),Bool(True))
 		elif ast.name == "False":
 			return InjectFrom(Const(BOOL),Bool(False))
+		elif ast.name in runtime_func:
+			return GlobalFuncName(ast.name)
 		else:
 			return ast
 	elif isinstance(ast, Add):
