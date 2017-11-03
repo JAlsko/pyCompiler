@@ -17,6 +17,7 @@ import src.typeCheck as typeCheck
 import src.ifFlatten as ifFlat
 import src.uniquify as uniq
 import src.heapify as heapify
+import src.closure as close
 import pprint
 
 def main():
@@ -28,19 +29,28 @@ def main():
 		#ast = parse.parse(program)
 		ast = compiler.parse(program)
 		if '-ast' in sys.argv:
+			print "---------------ast---------------"
 			print ast
 		uniqAst = uniq.uniquifyWrapper(ast)
 		if '-uniqast' in sys.argv:
+			print "-------------uniqAst-------------"
 			print uniqAst
 		explicateAst = explicate.explicate(uniqAst, [])
 		if '-explicate' in sys.argv:
+			print "----------explicateAst-----------"
 			print explicateAst
 		heapVars = heapify.determineHeapify(explicateAst)
 		if '-heapvars' in sys.argv:
+			print "------------heapVars-------------"
 			print heapVars
 		heapifiedAst = heapify.heapify(explicateAst, heapVars)
 		if '-heapast' in sys.argv:
+			print "-------------heapAst-------------"
 			print heapifiedAst
+		functions = close.closureWrapper(heapifiedAst)
+		if '-closure' in sys.argv:
+			print "------------functions------------"
+			print functions
 
 		'''
 		typeCheck.typeCheck(explicateAst, {})
@@ -77,3 +87,5 @@ def main():
 
 		
 main()
+
+

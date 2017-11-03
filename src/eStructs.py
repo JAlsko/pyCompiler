@@ -10,9 +10,9 @@ class GlobalFuncName():
 	def __init__(self, _name):
 		self.name = _name
 	def __str__(self):
-		return "RuntimeFunc(" + str(self.name) + ")"
+		return "GlobalFuncName(" + str(self.name) + ")"
 	def __repr__(self):
-		return "RuntimeFunc(" + str(self.name) + ")"
+		return "GlobalFuncName(" + str(self.name) + ")"
 
 class Let():
 	def __init__(self, var, rhs, body):

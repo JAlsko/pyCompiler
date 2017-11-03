@@ -43,6 +43,7 @@ def free_vars(ast, variables):
 		ret = set([])
 		for thing in ast.nodes:
 			ret = ret | free_vars(thing, variables)
+		return ret
 	elif isinstance(ast, Dict):
 		ret = set([])
 		for item in ast.items:
@@ -103,6 +104,7 @@ def determineHeapify(ast):
 		ret = set([])
 		for thing in ast.nodes:
 			ret = ret | determineHeapify(thing)
+		return ret
 	elif isinstance(ast, Dict):
 		ret = set([])
 		for item in ast.items:
@@ -168,6 +170,7 @@ def local_vars(ast, variables):
 		ret = set([])
 		for thing in ast.nodes:
 			ret = ret | local_vars(thing, variables)
+		return ret
 	elif isinstance(ast, Dict):
 		ret = set([])
 		for item in ast.items:
@@ -220,7 +223,7 @@ def heapify(ast, variables):
 		return ast
 	elif isinstance(ast, Name):
 		if ast.name in variables:
-			CallFunc(GlobalFuncName("get_subscript"),[ast, Const(0)])
+			return CallFunc(GlobalFuncName("get_subscript"),[ast, Const(0)])
 		else:
 			return ast
 	elif isinstance(ast, Add):
@@ -279,3 +282,4 @@ def heapify(ast, variables):
 		return Return(heapify(ast.value, variables))
 	else:
 		raise Exception("No AST match: " + str(ast))
+

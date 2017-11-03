@@ -1,26 +1,36 @@
 import compiler
 from compiler.ast import *
 from eStructs import * 
+from heapify import free_vars
+
+def newVariables(variables):
+	ret = variables[0]
+	variables[0] += 1
+	return Name("l" + str(ret))
+
+def newFunction(functions):
+	return "f" + str(len(functions))
 
 def closureWrapper(ast):
 	functions = {}
-	closure(ast, functions)
+	variables = [0]
+	closure(ast, functions, variables)
 	return functions
 
-def closure(ast, functions):
+def closure(ast, functions, variables):
 	if isinstance(ast, Module):
-		main = closure(ast.node, functions)
+		main = closure(ast.node, functions, variables)
 		functions["main"] = main
 		return None
 	elif isinstance(ast, Stmt):
 		newStmts = []
 		for node in ast.nodes:
-			newStmts.append(closure(node, functions))
+			newStmts.append(closure(node, functions, variables))
 		return Stmt(newStmts)
 	elif isinstance(ast, Assign):
-		return Assign(ast.nodes, closure(ast.expr, functions))
+		return Assign(ast.nodes, closure(ast.expr, functions, variables))
 	elif isinstance(ast, Discard):
-		return Discard(closure(ast.expr, functions))
+		return Discard(closure(ast.expr, functions, variables))
 	elif isinstance(ast, Const):
 		return ast
 	elif isinstance(ast, Bool):
@@ -28,40 +38,54 @@ def closure(ast, functions):
 	elif isinstance(ast, Name):
 		return ast
 	elif isinstance(ast, Add):
-		return Add((closure(ast.left, functions), closure(ast.right, functions)))
+		return Add((closure(ast.left, functions, variables), closure(ast.right, functions, variables)))
 	elif isinstance(ast, Compare):
-		return Compare(closure(ast.expr, functions),[(ast.ops[0][0], closure(ast.ops[0][1], functions))])
+		return Compare(closure(ast.expr, functions, variables),[(ast.ops[0][0], closure(ast.ops[0][1], functions, variables))])
 	elif isinstance(ast, UnarySub):
-		return UnarySub(closure(ast.expr, functions))
+		return UnarySub(closure(ast.expr, functions, variables))
 	elif isinstance(ast, Not):
-		return Not(closure(ast.expr, functions))
+		return Not(closure(ast.expr, functions, variables))
 	elif isinstance(ast, CallFunc):
 		if isinstance(ast.node, GlobalFuncName):
 			newArgs = []
 			for arg in ast.args:
-				newArgs.append(closure(arg, functions))
+				newArgs.append(closure(arg, functions, variables))
 			return CallFunc(ast.node, newArgs)
 		else:
-			ret = closure(ast.node)
-			newArgs = [CallFunc(GlobalFuncName('get_free_vars'), ret)]
+			new_var = newVariables(variables)
+			newArgs = [CallFunc(GlobalFuncName('get_free_vars'), new_var)]
 			for arg in ast.args:
-				newArgs.append(closure(arg, functions))
-			return CallFunc(CallFunc(), newArgs)
+				newArgs.append(closure(arg, functions, variables))
+			return Let(new_var, closure(ast.node, functions, variables), CallFunc(CallFunc(GlobalFuncName('get_fun_ptr'), [new_var]), newArgs))
 	elif isinstance(ast, IfExp):
-		return IfExp(closure(ast.test, functions), closure(ast.then, functions), closure(ast.else_, functions))
+		return IfExp(closure(ast.test, functions, variables), closure(ast.then, functions, variables), closure(ast.else_, functions, variables))
 	elif isinstance(ast, Let):
-		return Let(closure(ast.var, functions), closure(ast.rhs, functions), closure(ast.body, functions))
+		return Let(closure(ast.var, functions, variables), closure(ast.rhs, functions, variables), closure(ast.body, functions, variables))
 	elif isinstance(ast, InjectFrom):
-		return InjectFrom(ast.typ, closure(ast.arg, functions))
+		return InjectFrom(ast.typ, closure(ast.arg, functions, variables))
 	elif isinstance(ast, ProjectTo):
-		return ProjectTo(ast.typ, closure(ast.arg, functions))
+		return ProjectTo(ast.typ, closure(ast.arg, functions, variables))
 	elif isinstance(ast, GetTag):
-		return GetTag(closure(ast.arg, functions))
+		return GetTag(closure(ast.arg, functions, variables))
 	elif isinstance(ast, Lambda):
-		pass
-	elif isinstance(ast, RuntimeFunc):
+		new_code = closure(ast.code, functions, variables)
+		freeVars = free_vars(new_code, set([])) - set(ast.argnames)
+		newStmts = []
+		new_var = newVariables(variables)
+		for i in range(0, len(freeVars)):
+			newStmts.append(Assign([AssName(freeVars[i], 'OP_ASSIGN')], CallFunc(GlobalFuncName('get_subscript'),[new_var, Const(i)])))
+		for stmt in ast.code.nodes:
+			newStmts.append(stmt)
+		newargs = [new_var] + ast.argnames
+		func_name = newFunction(functions)
+		functions[func_name] = Lambda(newargs, ast.defaults, ast.flags, new_code)
+		free_var_names = []
+		for var in freeVars:
+			free_var_names.append(Name(var))
+		return CallFunc(GlobalFuncName('create_closure'),[GlobalFuncName(func_name), List(free_var_names)])
+	elif isinstance(ast, GlobalFuncName):
 		return ast
 	elif isinstance(ast, Return):
-		return Return(closure(ast.value, functions))
+		return Return(closure(ast.value, functions, variables))
 	else:
 		raise Exception("No AST match: " + str(ast))
