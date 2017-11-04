@@ -76,15 +76,15 @@ def closure(ast, functions, variables):
 		for var in freeVars:
 			newStmts.append(Assign([AssName(var, 'OP_ASSIGN')], CallFunc(GlobalFuncName('get_subscript'),[new_var, Const(i)])))
 			i += 1
-		for stmt in ast.code.nodes:
+		for stmt in new_code.nodes:
 			newStmts.append(stmt)
 		newargs = [new_var.name] + ast.argnames
 		func_name = newFunction(functions)
-		functions[func_name] = Lambda(newargs, ast.defaults, ast.flags, new_code)
+		functions[func_name] = Lambda(newargs, ast.defaults, ast.flags, Stmt(newStmts))
 		free_var_names = []
 		for var in freeVars:
 			free_var_names.append(Name(var))
-		return CallFunc(GlobalFuncName('create_closure'),[GlobalFuncName(func_name), List(free_var_names)])
+		return InjectFrom(Const(3), CallFunc(GlobalFuncName('create_closure'),[GlobalFuncName(func_name), List(free_var_names)]))
 	elif isinstance(ast, GlobalFuncName):
 		return ast
 	elif isinstance(ast, Return):

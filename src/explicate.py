@@ -118,7 +118,11 @@ def explicate(ast, variables):
 		newArgs = []
 		for arg in ast.args:
 			newArgs.append(explicate(arg, variables))
-		return InjectFrom(Const(INT), CallFunc(explicate(ast.node, variables), newArgs))
+		ret = explicate(ast.node, variables)
+		if isinstance(ret, GlobalFuncName):
+			if ret.name == "input":
+				return InjectFrom(Const(0), CallFunc(explicate(ast.node, variables), newArgs))
+		return CallFunc(explicate(ast.node, variables), newArgs)
 	elif isinstance(ast, List):
 		newNodes = []
 		for node in ast.nodes:

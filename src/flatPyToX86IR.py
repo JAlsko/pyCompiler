@@ -6,7 +6,7 @@ def addInstruction(last, new_instruction):
 	new_instruction.prev = last
 	return new_instruction
 
-def createAssembly(flatAst):
+def createAssembly(flatAst, func_name):
 	node = flatAst
 	first = None
 	last = None
@@ -15,9 +15,7 @@ def createAssembly(flatAst):
 			for i in range(0, len(node.output)):
 				last = addInstruction(last, structs.x86IRNode("movl", structs.Stack(str(4*(2+i)) + "(%ebp)"), node.output[i]))
 		elif node.operation == "FunctionEnd":
-			last = addInstruction(last, structs.x86IRNode("movl", 0, structs.Var("eax")))
-			last = addInstruction(last, structs.x86IRNode("leave", None, None))
-			last = addInstruction(last, structs.x86IRNode("ret", None, None))
+			pass
 		elif node.operation == "Assign":
 			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
 		elif node.operation == "Add":
@@ -44,8 +42,8 @@ def createAssembly(flatAst):
 			last = addInstruction(last, structs.x86IRNode("andl", 3, node.output))
 		elif node.operation == "IfExp":
 			last = addInstruction(last, structs.x86IRNode("IfExp", node.input1, node.output))
-			last.thenNext = createAssembly(node.thenNext)
-			last.elseNext = createAssembly(node.elseNext)
+			last.thenNext = createAssembly(node.thenNext, func_name)
+			last.elseNext = createAssembly(node.elseNext, func_name)
 		elif node.operation == "CompareEQ":
 			if isinstance(node.input1, structs.Var):
 				last = addInstruction(last, structs.x86IRNode("cmpl", node.input2, node.input1))
@@ -70,8 +68,7 @@ def createAssembly(flatAst):
 			last = addInstruction(last, structs.x86IRNode("addl", 4*len(node.input2), structs.Stack("%esp")))
 		elif node.operation == "Return":
 			last = addInstruction(last, structs.x86IRNode("movl", node.input1, structs.Var("eax")))
-			last = addInstruction(last, structs.x86IRNode("leave", None, None))
-			last = addInstruction(last, structs.x86IRNode("ret", None, None))
+			last = addInstruction(last, structs.x86IRNode("jmp", func_name + "_end", None))
 		else:
 			raise Exception("No flatAST match: " + str(node))
 		node = node.next

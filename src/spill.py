@@ -22,10 +22,10 @@ def checkSpills(flatAssem, graph, variables):
 				if not graph[working.var1.name].color in registers:
 					var1Stack = True
 			if isinstance(working.var2, structs.Stack):
-				var1Stack = True
+				var2Stack = True
 			elif isinstance(working.var2, structs.Var):
 				if not graph[working.var2.name].color in registers:
-					var1Stack = True
+					var2Stack = True
 			if var1Stack and var2Stack:
 				new_var = structs.newVariable(variables, None)
 				new_instr = structs.x86IRNode("movl", working.var1, new_var)

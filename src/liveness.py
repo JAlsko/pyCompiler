@@ -20,6 +20,8 @@ def setLiveness(flatAssem, live):
 			liveNow.discard("eax")
 			liveNow.discard("ecx")
 			liveNow.discard("edx")
+			if isinstance(working.var1, structs.Var):
+				liveNow.add(working.var1.name)
 		elif working.operation == "addl":
 			if isinstance(working.var1, structs.Var):
 				liveNow.add(working.var1.name)
@@ -48,6 +50,8 @@ def setLiveness(flatAssem, live):
 		elif working.operation == "ret":
 			pass
 		elif working.operation == "leave":
+			pass
+		elif working.operation == "jmp":
 			pass
 		elif working.operation == "IfExp":
 			thenLive = setLiveness(working.thenNext, liveNow)

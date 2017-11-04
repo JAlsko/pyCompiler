@@ -137,7 +137,7 @@ def color(saturation, colors):
 	for color in colors:
 		if color not in saturation:
 			return color
-	new_color = "-" + str((len(colors) - 5)*4) + "(%ebp)"
+	new_color = "-" + str((len(colors) - 6)*4) + "(%ebp)"
 	colors.append(new_color)
 	return new_color
 
