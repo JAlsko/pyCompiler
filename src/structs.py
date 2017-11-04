@@ -21,6 +21,14 @@ class Var():
 	def __repr__(self):
 		return "Var(" + str(self.name) + ")"
 
+class Stack():
+	def __init__(self, _name):
+		self.name = _name
+	def __str__(self):
+		return "Stack(" + str(self.name) + ")"
+	def __repr__(self):
+		return "Stack(" + str(self.name) + ")"
+
 class Esp():
 	def __init__(self):
 		pass

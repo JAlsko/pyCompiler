@@ -12,9 +12,12 @@ def createAssembly(flatAst):
 	last = None
 	while node != None:
 		if node.operation == "FunctionStart":
-			pass
+			for i in range(0, len(node.output)):
+				last = addInstruction(last, structs.x86IRNode("movl", structs.Stack(str(4*(2+i)) + "(%ebp)"), node.output[i]))
 		elif node.operation == "FunctionEnd":
-			pass
+			last = addInstruction(last, structs.x86IRNode("movl", 0, structs.Var("eax")))
+			last = addInstruction(last, structs.x86IRNode("leave", None, None))
+			last = addInstruction(last, structs.x86IRNode("ret", None, None))
 		elif node.operation == "Assign":
 			last = addInstruction(last, structs.x86IRNode("movl", node.input1, node.output))
 		elif node.operation == "Add":
@@ -64,8 +67,11 @@ def createAssembly(flatAst):
 			last = addInstruction(last, structs.x86IRNode("call", node.input1, None))
 			if node.output != None:
 				last = addInstruction(last, structs.x86IRNode("movl", structs.Var("eax"), node.output))
-			last = addInstruction(last, structs.x86IRNode("addl", 4*len(node.input2), structs.Esp()))
-
+			last = addInstruction(last, structs.x86IRNode("addl", 4*len(node.input2), structs.Stack("%esp")))
+		elif node.operation == "Return":
+			last = addInstruction(last, structs.x86IRNode("movl", node.input1, structs.Var("eax")))
+			last = addInstruction(last, structs.x86IRNode("leave", None, None))
+			last = addInstruction(last, structs.x86IRNode("ret", None, None))
 		else:
 			raise Exception("No flatAST match: " + str(node))
 		node = node.next

@@ -45,6 +45,10 @@ def setLiveness(flatAssem, live):
 			pass
 		elif working.operation == "andl":
 			pass
+		elif working.operation == "ret":
+			pass
+		elif working.operation == "leave":
+			pass
 		elif working.operation == "IfExp":
 			thenLive = setLiveness(working.thenNext, liveNow)
 			elseLive = setLiveness(working.elseNext, liveNow)

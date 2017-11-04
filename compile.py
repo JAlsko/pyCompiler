@@ -52,40 +52,50 @@ def main():
 			print "------------functions------------"
 			print structs.dictToStr(functions)
 		funcAssem = {}
+		nodeGraph = {}
+		numColors = {}
 		for func in functions:
 			#typeCheck.typeCheck(explicateAst, {})
 			print "----------------------------" + func + "----------------------------"
 			flatAst, variables = flatten.flatten(functions[func])
 			if '-flatpy' in sys.argv:
+				print "------------flatPy--------------"
 				structs.printLLwithIf(flatAst, 0)
 			flatAssem = tox86IR.createAssembly(flatAst)
 			if '-flatassem' in sys.argv:
+				print "------------flatAssem------------"
 				structs.printLLwithIf(flatAssem, 0)
 			if '-vars' in sys.argv:
+				print "--------------vars---------------"
 				print structs.setToStr(variables)
 			liveness.setLiveness(flatAssem, set([]))
 			unspillable = []
 			while True:
 				liveness.setLiveness(flatAssem, set([]))
 				if '-liveness' in sys.argv:
+					print "------------liveness-------------"
 					structs.printLLwithIf(flatAssem, 0)
-				nodeGraph = graph.createGraphWrapper(flatAssem, variables, unspillable)
+				nodeGraph[func] = graph.createGraphWrapper(flatAssem, variables, unspillable)
 				if '-graph' in sys.argv:
+					print "--------------graph--------------"
 					print structs.dictToStr(nodeGraph)
-				numColors = graph.colorGraph(nodeGraph)
+				numColors[func] = graph.colorGraph(nodeGraph[func])
 				if '-colors' in sys.argv:
+					print "-------------colors--------------"
 					print structs.dictToStr(nodeGraph)
-				(flatAssem, new_unspillable) = spill.checkSpills(flatAssem, nodeGraph, variables)
+				(flatAssem, new_unspillable) = spill.checkSpills(flatAssem, nodeGraph[func], variables)
 				if '-spills' in sys.argv:
+					print "-------------spills--------------"
 					print structs.setToStr(new_unspillable)
 				if not new_unspillable:
 					break;
 				unspillable.extend(new_unspillable)
 			finalFlatAssem = ifFlat.ifFlatten(flatAssem, [])
 			if '-ifFlat' in sys.argv:
+				print "-------------ifFlat--------------"
 				print structs.printLinkedList(finalFlatAssem)
 			funcAssem[func] = finalFlatAssem
-		#printAssem.createAssembly(sys.argv[1][:-2] + "s", finalFlatAssem, nodeGraph, numColors)'''
+		printAssem.createAssembly(sys.argv[1][:-2] + "s", funcAssem, nodeGraph, numColors)
 
 		
 main()

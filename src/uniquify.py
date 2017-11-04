@@ -22,8 +22,72 @@ def uniquifyWrapper(ast):
 	variables = [0, {}]
 	return uniquify(ast, variables)
 
+def uniquifySearch(ast, variables):
+	if isinstance(ast, Module):
+		uniquifySearch(ast.node, variables)
+	elif isinstance(ast, Stmt):
+		for statement in ast.nodes:
+			uniquifySearch(statement, variables)
+	elif isinstance(ast, Printnl):
+		uniquifySearch(ast.nodes[0], variables)
+	elif isinstance(ast, Assign):
+		uniquifySearch(ast.nodes[0], variables)
+		uniquifySearch(ast.expr, variables)
+	elif isinstance(ast, AssName):
+		newVariable(ast.name, variables, True)
+	elif isinstance(ast, Discard):
+		uniquifySearch(ast.expr, variables)
+	elif isinstance(ast, Const):
+		pass
+	elif isinstance(ast, Name):
+		pass
+	elif isinstance(ast, Add):
+		uniquifySearch(ast.left, variables)
+		uniquifySearch(ast.right, variables)
+	elif isinstance(ast, Compare):
+		uniquifySearch(ast.expr, variables)
+		uniquifySearch(ast.ops[0][1], variables)
+	elif isinstance(ast, And):
+		uniquifySearch(ast.nodes[0], variables)
+		uniquifySearch(ast.nodes[1], variables)
+	elif isinstance(ast, Or):
+		uniquifySearch(ast.nodes[0], variables)
+		uniquifySearch(ast.nodes[1], variables)
+	elif isinstance(ast, UnarySub):
+		uniquifySearch(ast.expr, variables)
+	elif isinstance(ast, Not):
+		uniquifySearch(ast.expr, variables)
+	elif isinstance(ast, CallFunc):
+		for arg in ast.args:
+			uniquifySearch(arg, variables)
+		uniquifySearch(ast.node, variables)
+	elif isinstance(ast, List):
+		for node in ast.nodes:
+			uniquifySearch(node, variables)
+	elif isinstance(ast, Dict):
+		for item in ast.items:
+			uniquifySearch(item[0],variables)
+			uniquifySearch(item[1],variables)
+	elif isinstance(ast, Subscript):
+		uniquifySearch(ast.expr, variables)
+		uniquifySearch(ast.subs[0], variables)
+	elif isinstance(ast, IfExp):
+		uniquifySearch(ast.test, variables)
+		uniquifySearch(ast.then, variables)
+		uniquifySearch(ast.else_, variables)
+	elif isinstance(ast, Return):
+		uniquifySearch(ast.value, variables)
+	elif isinstance(ast, Function):
+		func_name = newVariable(ast.name, variables, True)
+	elif isinstance(ast, Lambda):
+		pass
+	else:
+		raise Exception("No AST match: " + str(ast))
+
+
 def uniquify(ast, variables):
 	if isinstance(ast, Module):
+		uniquifySearch(ast.node, variables)
 		return Module(None, uniquify(ast.node, variables))
 	elif isinstance(ast, Stmt):
 		newStmts = []
@@ -35,7 +99,7 @@ def uniquify(ast, variables):
 	elif isinstance(ast, Assign):
 		return Assign([uniquify(ast.nodes[0], variables)], uniquify(ast.expr, variables))
 	elif isinstance(ast, AssName):
-		return AssName(newVariable(ast.name, variables, True), ast.flags)
+		return AssName(newVariable(ast.name, variables, False), ast.flags)
 	elif isinstance(ast, Discard):
 		return Discard(uniquify(ast.expr, variables))
 	elif isinstance(ast, Const):
@@ -76,11 +140,12 @@ def uniquify(ast, variables):
 	elif isinstance(ast, Return):
 		return Return(uniquify(ast.value, variables))
 	elif isinstance(ast, Function):
-		func_name = newVariable(ast.name, variables, True)
+		func_name = newVariable(ast.name, variables, False)
 		variables.append({})
 		new_argNames = []
 		for arg in ast.argnames:
 			new_argNames.append(newVariable(arg, variables, True))
+		uniquifySearch(ast.code, variables)
 		ret = Function(None, func_name, new_argNames, [], 0, None, uniquify(ast.code, variables))
 		del variables[-1]
 		return ret
@@ -89,10 +154,9 @@ def uniquify(ast, variables):
 		new_argNames = []
 		for arg in ast.argnames:
 			new_argNames.append(newVariable(arg, variables, True))
+		uniquifySearch(ast.code, variables)
 		ret = Lambda(new_argNames, [], 0, uniquify(ast.code, variables))
 		del variables[-1]
 		return ret
 	else:
 		raise Exception("No AST match: " + str(ast))
-
-
