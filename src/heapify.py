@@ -50,7 +50,7 @@ def free_vars(ast, variables):
 			ret = ret | free_vars(item[0], variables) | free_vars(item[1], variables)
 		return ret
 	elif isinstance(ast, IfExp):
-		return free_vars(ast.test, variables) | free_vars(ast.then, variables) | determineHeapify(ast.else_)
+		return free_vars(ast.test, variables) | free_vars(ast.then, variables) | free_vars(ast.else_, variables)
 	elif isinstance(ast, Let):
 		variables.add(ast.var.name)
 		return free_vars(ast.rhs, variables) | free_vars(ast.body, variables)

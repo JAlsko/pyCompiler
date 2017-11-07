@@ -169,7 +169,7 @@ def printAst(ast, indents):
 	elif isinstance(ast, Dict):
 		indentPrint("Dict(", indents)
 		printAst(ast.items, indents+1)
-		indentPrint(")")
+		indentPrint(")", indents)
 	elif isinstance(ast, tuple):
 		indentPrint("(", indents)
 		for node in ast:
