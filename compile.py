@@ -32,7 +32,7 @@ def main():
 			print "---------------ast---------------"
 			print ast
 		uniqAst = uniq.uniquifyWrapper(ast)
-		if '-uniqast' in sys.argv or '-all' in sys.argv:
+		if '-uniqast' in sys.argv or '-all' in sys.argv:	
 			print "-------------uniqAst-------------"
 			print uniqAst
 		explicateAst = explicate.explicate(uniqAst, [])
@@ -58,41 +58,44 @@ def main():
 			#typeCheck.typeCheck(explicateAst, {})
 			#print "----------------------------" + func + "----------------------------"
 			flatAst, variables = flatten.flatten(functions[func])
+			if '-varmap' in sys.argv or '-all' in sys.argv:
+				print func + ":--------------varmap-------------"
+				print structs.dictToStr(variables)
 			if '-flatpy' in sys.argv or '-all' in sys.argv:
-				print "------------flatPy--------------"
+				print func + ":------------flatPy--------------"
 				structs.printLLwithIf(flatAst, 0)
 			flatAssem = tox86IR.createAssembly(flatAst, func)
 			if '-flatassem' in sys.argv or '-all' in sys.argv:
-				print "------------flatAssem------------"
+				print func + ":------------flatAssem------------"
 				structs.printLLwithIf(flatAssem, 0)
 			if '-vars' in sys.argv or '-all' in sys.argv:
-				print "--------------vars---------------"
+				print func + ":--------------vars---------------"
 				print structs.setToStr(variables)
 			liveness.setLiveness(flatAssem, set([]))
 			unspillable = []
 			while True:
 				liveness.setLiveness(flatAssem, set([]))
 				if '-liveness' in sys.argv or '-all' in sys.argv:
-					print "------------liveness-------------"
+					print func + ":------------liveness-------------"
 					structs.printLLwithIf(flatAssem, 0)
 				nodeGraph[func] = graph.createGraphWrapper(flatAssem, variables, unspillable)
 				if '-graph' in sys.argv or '-all' in sys.argv:
-					print "--------------graph--------------"
+					print func + ":--------------graph--------------"
 					print structs.dictToStr(nodeGraph)
 				numColors[func] = graph.colorGraph(nodeGraph[func])
 				if '-colors' in sys.argv or '-all' in sys.argv:
-					print "-------------colors--------------"
+					print func + ":-------------colors--------------"
 					print structs.dictToStr(nodeGraph)
 				(flatAssem, new_unspillable) = spill.checkSpills(flatAssem, nodeGraph[func], variables)
 				if '-spills' in sys.argv or '-all' in sys.argv:
-					print "-------------spills--------------"
+					print func + ":-------------spills--------------"
 					print structs.setToStr(new_unspillable)
 				if not new_unspillable:
 					break;
 				unspillable.extend(new_unspillable)
 			finalFlatAssem = ifFlat.ifFlatten(flatAssem, [], func)
 			if '-ifFlat' in sys.argv or '-all' in sys.argv:
-				print "-------------ifFlat--------------"
+				print func + ":-------------ifFlat--------------"
 				print structs.printLinkedList(finalFlatAssem)
 			funcAssem[func] = finalFlatAssem
 		printAssem.createAssembly(sys.argv[1][:-2] + "s", funcAssem, nodeGraph, numColors)

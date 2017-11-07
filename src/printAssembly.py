@@ -19,7 +19,6 @@ def createAssembly(targetFile, flatAssem, graph, numColors):
 			outputFile.write(func + ":\n")
 			outputFile.write("\tpushl %ebp\n")
 			outputFile.write("\tmovl %esp, %ebp\n")
-			print numColors[func]
 			outputFile.write("\tsubl $" + str(numColors[func] * 4) + ", %esp\n")
 			numColors[func] += 1
 			if ebx:

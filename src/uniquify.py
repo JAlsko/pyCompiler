@@ -134,7 +134,7 @@ def uniquify(ast, variables):
 			newItems.append((uniquify(item[0],variables),uniquify(item[1],variables)))
 		return Dict(newItems)
 	elif isinstance(ast, Subscript):
-		return Subscript(uniquify(ast.expr, variables), ast.flags, uniquify(ast.subs[0], variables))
+		return Subscript(uniquify(ast.expr, variables), ast.flags, [uniquify(ast.subs[0], variables)])
 	elif isinstance(ast, IfExp):
 		return IfExp(uniquify(ast.test, variables), uniquify(ast.then, variables), uniquify(ast.else_, variables))
 	elif isinstance(ast, Return):
