@@ -81,6 +81,13 @@ def uniquifySearch(ast, variables):
 		func_name = newVariable(ast.name, variables, True)
 	elif isinstance(ast, Lambda):
 		pass
+	elif isinstance(ast, If):
+		uniquifySearch(ast.tests[0][0], variables)
+		uniquifySearch(ast.tests[0][1], variables)
+		uniquifySearch(ast.else_, variables)
+	elif isinstance(ast, While):
+		uniquifySearch(ast.test, variables)
+		uniquifySearch(ast.body, variables)
 	else:
 		raise Exception("No AST match: " + str(ast))
 
@@ -158,5 +165,9 @@ def uniquify(ast, variables):
 		ret = Lambda(new_argNames, [], 0, uniquify(ast.code, variables))
 		del variables[-1]
 		return ret
+	elif isinstance(ast, If):
+		return If([(uniquify(ast.tests[0][0], variables), uniquify(ast.tests[0][1], variables))], uniquify(ast.else_, variables))
+	elif isinstance(ast, While):
+		return While(uniquify(ast.test, variables), uniquify(ast.body, variables), None)
 	else:
 		raise Exception("No AST match: " + str(ast))

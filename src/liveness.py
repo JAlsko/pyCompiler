@@ -57,6 +57,10 @@ def setLiveness(flatAssem, live):
 			thenLive = setLiveness(working.thenNext, liveNow)
 			elseLive = setLiveness(working.elseNext, liveNow)
 			liveNow = thenLive | elseLive
+			# need to add if test liveness
+		#elif working.operation == "While":
+		#	liveNowOld = liveNow
+#
 		else:
 			raise Exception("No instruction match: " + str(working.operation))
 

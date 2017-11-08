@@ -99,5 +99,9 @@ def closure(ast, functions, variables):
 		for item in ast.items:
 			newItems.append((closure(item[0], functions, variables), closure(item[1], functions, variables)))
 		return Dict(newItems)
+	elif isinstance(ast, If):
+		return If([(closure(ast.tests[0][0], functions, variables), closure(ast.tests[0][1], functions, variables))], closure(ast.else_, functions, variables))
+	elif isinstance(ast, While):
+		return While(closure(ast.test, functions, variables), closure(ast.body, functions, variables), None)
 	else:
 		raise Exception("No AST match: " + str(ast))

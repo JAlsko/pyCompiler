@@ -81,6 +81,13 @@ def printLLwithIf(node, indent):
 			string += "Else:"
 			print string
 			printLLwithIf(node.elseNext, indent + 1)
+		elif node.operation == "While":
+			string = ""
+			for i in range(0, indent):
+				string += "\t"
+			string += "Do:"
+			print string
+			printLLwithIf(node.thenNext, indent + 1)
 		node = node.next
 
 def indentPrint(str, indents):
@@ -88,6 +95,49 @@ def indentPrint(str, indents):
 	for i in range(0, indents):
 		string += "\t"
 	print string + str
+
+def astReadable(ast):
+	input = str(ast)
+	indent = 0
+	output = ""
+	unit = False
+	i = 0
+	while i < len(input):
+		if input[i] == " ":
+			pass
+		elif input[i] in  ['(', '[', '{']:
+			output += input[i]
+			if (i > 4) and input[i-4:i] in ["Bool", "Name"]:
+				unit = True
+			elif (i > 5) and input[i-5:i] in ["Const"]:
+				unit = True
+			else:
+				output += '\n'
+				indent += 1
+				for j in range(0, indent):
+					output += "|  "
+		elif input[i] in [')', ']', '}']:
+			output += input[i]
+			if unit == True:
+				unit = False
+			else:
+				indent -= 1
+				if not ((i+1 < len(input)) and input[i+1] in [',', ':']):
+					output += '\n'
+					for j in range(0, indent):
+						output += "|  "
+		elif input[i] in [',', ':']:
+			output += input[i]
+			if unit == True:
+				pass
+			else:
+				output += "\n"
+				for j in range(0, indent):
+					output += "|  "
+		else:
+			output += input[i]
+		i += 1
+	return output
 
 def printAst(ast, indents):
 	if isinstance(ast, Module):

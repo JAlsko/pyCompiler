@@ -66,6 +66,10 @@ def free_vars(ast, variables):
 		return set([])
 	elif isinstance(ast, Return):
 		return free_vars(ast.value, variables)
+	elif isinstance(ast, If):
+		return free_vars(ast.tests[0][0], variables) | free_vars(ast.tests[0][1], variables) | free_vars(ast.else_, variables)
+	elif isinstance(ast, While):
+		return free_vars(ast.test, variables) | free_vars(ast.body, variables)
 	else:
 		raise Exception("No AST match: " + str(ast))
 
@@ -126,6 +130,10 @@ def determineHeapify(ast):
 		return set([])
 	elif isinstance(ast, Return):
 		return determineHeapify(ast.value)
+	elif isinstance(ast, If):
+		return determineHeapify(ast.tests[0][0]) | determineHeapify(ast.tests[0][1]) | determineHeapify(ast.else_)
+	elif isinstance(ast, While):
+		return determineHeapify(ast.test) | determineHeapify(ast.body)
 	else:
 		raise Exception("No AST match: " + str(ast))
 
@@ -192,6 +200,10 @@ def local_vars(ast, variables):
 		return set([])
 	elif isinstance(ast, Return):
 		return local_vars(ast.value, variables)
+	elif isinstance(ast, If):
+		return local_vars(ast.tests[0][0], variables) | local_vars(ast.tests[0][1], variables) | local_vars(ast.else_, variables)
+	elif isinstance(ast, While):
+		return local_vars(ast.test, variables) | local_vars(ast.body, variables)
 	else:
 		raise Exception("No AST match: " + str(ast))
 
@@ -280,6 +292,10 @@ def heapify(ast, variables):
 		return ast
 	elif isinstance(ast, Return):
 		return Return(heapify(ast.value, variables))
+	elif isinstance(ast, If):
+		return If([(heapify(ast.tests[0][0], variables), heapify(ast.tests[0][1], variables))], heapify(ast.else_, variables))
+	elif isinstance(ast, While):
+		return While(heapify(ast.test, variables), heapify(ast.body, variables), None)
 	else:
 		raise Exception("No AST match: " + str(ast))
 

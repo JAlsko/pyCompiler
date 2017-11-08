@@ -44,6 +44,9 @@ def createAssembly(flatAst, func_name):
 			last = addInstruction(last, structs.x86IRNode("IfExp", node.input1, node.output))
 			last.thenNext = createAssembly(node.thenNext, func_name)
 			last.elseNext = createAssembly(node.elseNext, func_name)
+		elif node.operation == "While":
+			last = addInstruction(last, structs.x86IRNode("While", node.input1, node.output))
+			last.thenNext = createAssembly(node.thenNext, func_name)
 		elif node.operation == "CompareEQ":
 			if isinstance(node.input1, structs.Var):
 				last = addInstruction(last, structs.x86IRNode("cmpl", node.input2, node.input1))

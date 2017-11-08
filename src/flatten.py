@@ -216,6 +216,35 @@ def flattenRecurs(ast, variables):
 		#print str(ast)
 		#structs.printLLwithIf(first, 0)
 		return first, output
+	elif isinstance(ast, If):
+		result0 = flattenRecurs(ast.tests[0][0], variables)
+		result1 = flattenRecurs(ast.tests[0][1], variables)
+		result2 = flattenRecurs(ast.else_, variables)
+		first = result0[0]
+		last = structs.getLast(first)
+		ifNode = structs.flatNode("IfExp", None, last, None, result0[1], None)
+		if first == None:
+			first = ifNode
+		else:
+			last.next = ifNode
+		ifNode.thenNext = result1
+		result1.prev = ifNode
+		ifNode.elseNext = result2
+		result2.prev = ifNode
+		return first
+	elif isinstance(ast, While):
+		result0 = flattenRecurs(ast.test, variables)
+		result1 = flattenRecurs(ast.body, variables)
+		first = result0[0]
+		last = structs.getLast(first)
+		whileNode = structs.flatNode("While", None, last, None, result0[1], None)
+		if first == None:
+			first = whileNode
+		else:
+			last.next = whileNode
+		whileNode.thenNext = result1
+		result1.prev = whileNode
+		return first
 	elif isinstance(ast, GetTag):
 		result = flattenRecurs(ast.arg, variables)
 		output = newVariable(variables, None)

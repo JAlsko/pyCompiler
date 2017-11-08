@@ -145,6 +145,10 @@ def explicate(ast, variables):
 		return Lambda(ast.argnames, ast.defaults, ast.flags, Stmt([Return(explicate(ast.code, variables))]))
 	elif isinstance(ast, Function):
 		return Assign([AssName(ast.name, 'OP_ASSIGN')],Lambda(ast.argnames, ast.defaults, ast.flags, explicate(ast.code, variables)))
+	elif isinstance(ast, If):
+		return If([(explicate(ast.tests[0][0], variables), explicate(ast.tests[0][1], variables))], explicate(ast.else_, variables))
+	elif isinstance(ast, While):
+		return While(explicate(ast.test, variables), explicate(ast.body, variables), None)
 	else:
 		raise Exception("No AST match: " + str(ast))
 
