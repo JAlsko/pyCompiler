@@ -148,7 +148,8 @@ def explicate(ast, variables):
 	elif isinstance(ast, If):
 		return If([(explicate(ast.tests[0][0], variables), explicate(ast.tests[0][1], variables))], explicate(ast.else_, variables))
 	elif isinstance(ast, While):
-		return While(explicate(ast.test, variables), explicate(ast.body, variables), None)
+		x = newVariable(variables)
+		return While(Let(x, explicate(ast.test, variables), getBool(x, variables)), explicate(ast.body, variables), None)
 	else:
 		raise Exception("No AST match: " + str(ast))
 

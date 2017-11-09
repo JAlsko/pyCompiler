@@ -6,7 +6,7 @@ def checkSpills(flatAssem, graph, variables):
 	retAssem = flatAssem
 	unspillable = []
 	while working != None:
-		if working.operation == "IfExp":
+		if working.operation in ["IfExp", "While"]:
 			result = checkSpills(working.thenNext, graph, variables)
 			working.thenNext = result[0]
 			unspillable.extend(result[1])

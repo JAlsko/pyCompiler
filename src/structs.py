@@ -85,6 +85,12 @@ def printLLwithIf(node, indent):
 			string = ""
 			for i in range(0, indent):
 				string += "\t"
+			string += "Cond:"
+			print string
+			printLLwithIf(node.elseNext, indent + 1)
+			string = ""
+			for i in range(0, indent):
+				string += "\t"
 			string += "Do:"
 			print string
 			printLLwithIf(node.thenNext, indent + 1)

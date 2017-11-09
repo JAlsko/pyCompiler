@@ -51,7 +51,7 @@ def createAssembly(targetFile, flatAssem, graph, numColors):
 						outputFile.write(str(working.var1.name))	
 					elif isinstance(working.var1, structs.Stack):
 						outputFile.write(str(working.var1.name))
-					elif working.operation in ["jmp", "je"]:
+					elif working.operation in ["jmp", "je", "jne"]:
 						outputFile.write(str(working.var1))	
 					else:
 						if working.var1 != None:

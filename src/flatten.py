@@ -235,16 +235,12 @@ def flattenRecurs(ast, variables):
 	elif isinstance(ast, While):
 		result0 = flattenRecurs(ast.test, variables)
 		result1 = flattenRecurs(ast.body, variables)
-		first = result0[0]
-		last = structs.getLast(first)
-		whileNode = structs.flatNode("While", None, last, None, result0[1], None)
-		if first == None:
-			first = whileNode
-		else:
-			last.next = whileNode
+		whileNode = structs.flatNode("While", None, None, None, result0[1], None)
 		whileNode.thenNext = result1
 		result1.prev = whileNode
-		return first
+		whileNode.elseNext = result0[0]
+		result0[0].prev = whileNode
+		return whileNode
 	elif isinstance(ast, GetTag):
 		result = flattenRecurs(ast.arg, variables)
 		output = newVariable(variables, None)

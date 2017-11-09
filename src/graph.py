@@ -119,6 +119,10 @@ def createGraph(x86IR, nodes):
 			addEdges(working.var1, working.liveness, nodes)
 			createGraph(working.thenNext, nodes)
 			createGraph(working.elseNext, nodes)
+		elif working.operation == "While":
+			createGraph(working.elseNext, nodes)
+			addEdges(working.var1, working.liveness, nodes)
+			createGraph(working.thenNext, nodes)
 		elif working.operation in ["addl", "andl", "sall", "sarl", "orl"]:
 			addEdges(working.var2, working.liveness, nodes)
 		elif working.operation in ["negl", "notl", "sete", "setne"]:

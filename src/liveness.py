@@ -57,10 +57,22 @@ def setLiveness(flatAssem, live):
 			thenLive = setLiveness(working.thenNext, liveNow)
 			elseLive = setLiveness(working.elseNext, liveNow)
 			liveNow = thenLive | elseLive
-			# need to add if test liveness
-		#elif working.operation == "While":
-		#	liveNowOld = liveNow
-#
+			if isinstance(working.var1, structs.Var):
+				liveNow.add(working.var1.name)
+		elif working.operation == "While":
+			liveIncoming = set(liveNow)
+			loopLive = set([])
+			liveNowOld = None
+			while True:
+				liveNow = liveIncoming | loopLive
+				if isinstance(working.var1, structs.Var):
+					liveNow.add(working.var1.name)
+				liveNow = setLiveness(working.elseNext, liveNow)
+				if liveNowOld == liveNow:
+					break
+				liveNowOld = set(liveNow)
+				loopLive = setLiveness(working.thenNext, liveNow)
+
 		else:
 			raise Exception("No instruction match: " + str(working.operation))
 

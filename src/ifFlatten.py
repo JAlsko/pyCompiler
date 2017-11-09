@@ -35,6 +35,30 @@ def ifFlatten(x86IR, labels, func):
 			pair(last2,labelInst2)
 			if working.next != None:
 				pair(labelInst2,working.next)
+		if working.operation == "While":
+			label1 = newLabel(labels, func)
+			label2 = newLabel(labels, func)
+			labelInst = x86IRNode(label1 + ":", None, None)
+			if working.prev == None:
+				x86IR = labelInst
+			else:
+				pair(working.prev, labelInst)
+			compareCalc = ifFlatten(working.elseNext, labels, func)
+			pair(labelInst, compareCalc)
+			last = getLast(compareCalc)
+			compareNode = x86IRNode("cmpl", 0, working.var1)
+			pair(last, compareNode)
+			jump1 = x86IRNode("je", label2, None)
+			pair(compareNode, jump1)
+			loop = ifFlatten(working.thenNext, labels, func)
+			pair(jump1,loop)
+			last = getLast(loop)
+			jump2 = x86IRNode("jmp", label1, None)
+			pair(last, jump2)
+			labelInst2 = x86IRNode(label2 + ":", None, None)
+			pair(jump2, labelInst2)
+			if working.next != None:
+				pair(labelInst2, working.next)
 		working = working.next
 	return x86IR
 
