@@ -18,6 +18,8 @@ import src.ifFlatten as ifFlat
 import src.uniquify as uniq
 import src.heapify as heapify
 import src.closure as close
+import src.declassify as declass
+import src.string as string
 import pprint
 
 def main():
@@ -30,15 +32,31 @@ def main():
 		ast = compiler.parse(program)
 		if '-ast' in sys.argv or '-all' in sys.argv:
 			print "---------------ast---------------"
-			print structs.astReadable(ast)
-		uniqAst = uniq.uniquifyWrapper(ast)
+			if '-longast' in sys.argv:
+				print structs.astReadable(ast)
+			else:
+				print ast
+		declassAst = declass.declassify(ast)
+		if '-declassast' in sys.argv or '-all' in sys.argv:
+			print "-----------declassAst------------"
+			if '-longast' in sys.argv:
+				print structs.astReadable(declassAst)
+			else:
+				print declassAst
+		uniqAst = uniq.uniquifyWrapper(declassAst)
 		if '-uniqast' in sys.argv or '-all' in sys.argv:	
 			print "-------------uniqAst-------------"
-			print structs.astReadable(uniqAst)
+			if '-longast' in sys.argv:
+				print structs.astReadable(uniqAst)
+			else:
+				print uniqAst
 		explicateAst = explicate.explicate(uniqAst, [])
 		if '-explicate' in sys.argv or '-all' in sys.argv:
 			print "----------explicateAst-----------"
-			print structs.astReadable(explicateAst)
+			if '-longast' in sys.argv:
+				print structs.astReadable(explicateAst)
+			else:
+				print explicateAst
 		heapVars = heapify.determineHeapify(explicateAst)
 		if '-heapvars' in sys.argv or '-all' in sys.argv:
 			print "------------heapVars-------------"
@@ -46,11 +64,27 @@ def main():
 		heapifiedAst = heapify.heapify(explicateAst, heapVars)
 		if '-heapast' in sys.argv or '-all' in sys.argv:
 			print "-------------heapAst-------------"
-			print structs.astReadable(heapifiedAst)
-		functions = close.closureWrapper(heapifiedAst)
+			if '-longast' in sys.argv:
+				print structs.astReadable(heapifiedAst)
+			else:
+				print heapifiedAst
+		strings = {}
+		noStringAst = string.rmString(heapifiedAst, strings)
+		if '-strings' in sys.argv or '-all' in sys.argv:
+			print structs.dictToStr(strings)
+		if '-stringAst' in sys.argv or '-all' in sys.argv:
+			print "------------stringAst------------"
+			if '-longast' in sys.argv:
+				print structs.astReadable(noStringAst)
+			else:
+				print structs.dictToStr(noStringAst)
+		functions = close.closureWrapper(noStringAst)
 		if '-closure' in sys.argv or '-all' in sys.argv:
 			print "------------functions------------"
-			print structs.astReadable(functions)
+			if '-longast' in sys.argv:
+				print structs.astReadable(functions)
+			else:
+				print structs.dictToStr(functions)
 		funcAssem = {}
 		nodeGraph = {}
 		numColors = {}

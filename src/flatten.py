@@ -58,6 +58,8 @@ def flattenRecurs(ast, variables):
 		return flattenRecurs(ast.expr, variables)[0]
 	elif isinstance(ast, Const):
 		return None, ast.value
+	elif isinstance(ast, String):
+		return None, ast.value
 	elif isinstance(ast, Bool):
 		return None, ast.value
 	elif isinstance(ast, Name):

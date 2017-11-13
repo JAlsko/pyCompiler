@@ -32,6 +32,8 @@ def typeCheck(ast, variables):
 		ret = NONE
 	elif isinstance(ast, Const):
 		return INT
+	elif isinstance(ast, String):
+		return FUNCRET
 	elif isinstance(ast, Bool):
 		return BOOL
 	elif isinstance(ast, Name):

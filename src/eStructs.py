@@ -6,6 +6,14 @@ class Bool():
 	def __repr__(self):
 		return "Bool(" + str(self.value) + ")"
 
+class String():
+	def __init__(self, val):
+		self.value = val
+	def __str__(self):
+		return "String(" + str(self.value) + ")"
+	def __repr__(self):
+		return "String(" + str(self.value) + ")"
+
 class GlobalFuncName():
 	def __init__(self, _name):
 		self.name = _name

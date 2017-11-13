@@ -19,6 +19,8 @@ def free_vars(ast, variables):
 		return free_vars(ast.expr, variables)
 	elif isinstance(ast, Const):
 		return set([])
+	elif isinstance(ast, String):
+		return set([])
 	elif isinstance(ast, Bool):
 		return set([])
 	elif isinstance(ast, Name):
@@ -86,6 +88,8 @@ def determineHeapify(ast):
 	elif isinstance(ast, Discard):
 		return determineHeapify(ast.expr)
 	elif isinstance(ast, Const):
+		return set([])
+	elif isinstance(ast, String):
 		return set([])
 	elif isinstance(ast, Bool):
 		return set([])
@@ -156,6 +160,8 @@ def local_vars(ast, variables):
 	elif isinstance(ast, Discard):
 		return local_vars(ast.expr, variables)
 	elif isinstance(ast, Const):
+		return set([])	
+	elif isinstance(ast, String):
 		return set([])
 	elif isinstance(ast, Bool):
 		return set([])
@@ -230,6 +236,8 @@ def heapify(ast, variables):
 	elif isinstance(ast, Discard):
 		return Discard(heapify(ast.expr, variables))
 	elif isinstance(ast, Const):
+		return ast
+	elif isinstance(ast, String):
 		return ast
 	elif isinstance(ast, Bool):
 		return ast

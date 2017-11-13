@@ -66,6 +66,8 @@ def explicate(ast, variables):
 		return Discard(explicate(ast.expr, variables))
 	elif isinstance(ast, Const):
 		return InjectFrom(Const(INT), ast)
+	elif isinstance(ast, String):
+		return ast
 	elif isinstance(ast, Name):
 		if ast.name == "True":
 			return InjectFrom(Const(BOOL),Bool(True))
@@ -150,6 +152,8 @@ def explicate(ast, variables):
 	elif isinstance(ast, While):
 		x = newVariable(variables)
 		return While(Let(x, explicate(ast.test, variables), getBool(x, variables)), explicate(ast.body, variables), None)
+	elif isinstance(ast, GlobalFuncName):
+		return ast
 	else:
 		raise Exception("No AST match: " + str(ast))
 

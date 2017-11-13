@@ -1,5 +1,6 @@
 import compiler
 from compiler.ast import *
+from eStructs import *
 
 protected_names = ["True", "False", "input"]
 
@@ -38,6 +39,8 @@ def uniquifySearch(ast, variables):
 	elif isinstance(ast, Discard):
 		uniquifySearch(ast.expr, variables)
 	elif isinstance(ast, Const):
+		pass
+	elif isinstance(ast, String):
 		pass
 	elif isinstance(ast, Name):
 		pass
@@ -88,6 +91,8 @@ def uniquifySearch(ast, variables):
 	elif isinstance(ast, While):
 		uniquifySearch(ast.test, variables)
 		uniquifySearch(ast.body, variables)
+	elif isinstance(ast, GlobalFuncName):
+		pass
 	else:
 		raise Exception("No AST match: " + str(ast))
 
@@ -110,6 +115,8 @@ def uniquify(ast, variables):
 	elif isinstance(ast, Discard):
 		return Discard(uniquify(ast.expr, variables))
 	elif isinstance(ast, Const):
+		return ast
+	elif isinstance(ast, String):
 		return ast
 	elif isinstance(ast, Name):
 		return Name(newVariable(ast.name, variables, False))
@@ -169,5 +176,7 @@ def uniquify(ast, variables):
 		return If([(uniquify(ast.tests[0][0], variables), uniquify(ast.tests[0][1], variables))], uniquify(ast.else_, variables))
 	elif isinstance(ast, While):
 		return While(uniquify(ast.test, variables), uniquify(ast.body, variables), None)
+	elif isinstance(ast, GlobalFuncName):
+		return ast
 	else:
 		raise Exception("No AST match: " + str(ast))

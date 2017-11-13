@@ -33,6 +33,8 @@ def closure(ast, functions, variables):
 		return Discard(closure(ast.expr, functions, variables))
 	elif isinstance(ast, Const):
 		return ast
+	elif isinstance(ast, String):
+		return ast
 	elif isinstance(ast, Bool):
 		return ast
 	elif isinstance(ast, Name):
