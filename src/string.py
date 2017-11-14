@@ -52,7 +52,7 @@ def rmString(ast, strings):
 	elif isinstance(ast, GetTag):
 		return GetTag(rmString(ast.arg, strings))
 	elif isinstance(ast, Lambda):
-		return Lambda(ast.argnames, None, None, rmString(ast.code, strings))
+		return Lambda(ast.argnames, [], 0, rmString(ast.code, strings))
 	elif isinstance(ast, GlobalFuncName):
 		return ast
 	elif isinstance(ast, Return):

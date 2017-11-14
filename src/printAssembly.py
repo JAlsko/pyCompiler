@@ -1,8 +1,13 @@
 import structs
 import eStructs
 
-def createAssembly(targetFile, flatAssem, graph, numColors):
+def createAssembly(targetFile, flatAssem, graph, numColors, strings):
 	with open(targetFile, "w") as outputFile:
+		if strings:
+			outputFile.write("\t.data\n")
+			for string in strings:
+				outputFile.write(strings[string] + ":\n\t.ascii \"" + string + "\\0\"\n")
+			outputFile.write("\t.text\n")
 		outputFile.write(".globl main\n")
 		for func in flatAssem:
 			ebx = False

@@ -2,23 +2,104 @@ import compiler
 from compiler.ast import *
 from eStructs import *
 
-def declassify(ast):
+def newVariable(variables):
+	newVar = "d" + str(len(variables))
+	variables.append(newVar)
+	return newVar
+
+def declassClass(ast, variables, tempName):
+	if isinstance(ast, Stmt):
+		newStmts = []
+		for statement in ast.nodes:
+			ret = declassClass(statement, variables, tempName)
+			newStmts.append(ret)
+		return Stmt(newStmts)
+	elif isinstance(ast, Printnl):
+		return Printnl([declassClass(ast.nodes[0], variables, tempName)], ast.dest)
+	elif isinstance(ast, Assign):
+		if isinstance(ast.nodes[0], AssName):
+			return Discard(CallFunc(GlobalFuncName('set_attr'), [Name(tempName), String(ast.nodes[0].name), declassClass(ast.expr, variables, tempName)]))
+		else:
+			return Assign([declassClass(ast.nodes[0], variables, tempName)], declassClass(ast.expr, variables, tempName))
+	elif isinstance(ast, Discard):
+		return Discard(declassClass(ast.expr, variables, tempName))
+	elif isinstance(ast, Const):
+		return ast
+	elif isinstance(ast, String):
+		return ast
+	elif isinstance(ast, GlobalFuncName):
+		return ast
+	elif isinstance(ast, Name):
+		condition = CallFunc(GlobalFuncName('has_attr'), [Name(tempName), String(ast.name)])
+		attr_get = CallFunc(GlobalFuncName('get_attr'), [Name(tempName), String(ast.name)])
+		return IfExp(condition, attr_get, ast)
+	elif isinstance(ast, AssName):
+		return ast
+	elif isinstance(ast, Add):
+		return Add((declassClass(ast.left, variables, tempName), declassClass(ast.right, variables, tempName)))
+	elif isinstance(ast, Compare):
+		return Compare(declassClass(ast.expr, variables, tempName),[(ast.ops[0][0],declassClass(ast.ops[0][1], variables, tempName))])
+	elif isinstance(ast, And):
+		return And([declassClass(ast.nodes[0], variables, tempName),declassClass(ast.nodes[1], variables, tempName)])
+	elif isinstance(ast, Or):
+		return Or([declassClass(ast.nodes[0], variables, tempName),declassClass(ast.nodes[1], variables, tempName)])
+	elif isinstance(ast, UnarySub):
+		return UnarySub(declassClass(ast.expr, variables, tempName))
+	elif isinstance(ast, Not):
+		return Not(declassClass(ast.expr, variables, tempName))
+	elif isinstance(ast, CallFunc):
+		uniqArgs = []
+		for arg in ast.args:
+			uniqArgs.append(declassClass(arg, variables, tempName))
+		return CallFunc(declassClass(ast.node, variables, tempName), uniqArgs)
+	elif isinstance(ast, List):
+		newNodes = []
+		for node in ast.nodes:
+			newNodes.append(declassClass(node, variables, tempName))
+		return List(newNodes)
+	elif isinstance(ast, Dict):
+		newItems = []
+		for item in ast.items:
+			newItems.append((declassClass(item[0], variables, tempName),declassClass(item[1], variables, tempName)))
+		return Dict(newItems)
+	elif isinstance(ast, Subscript):
+		return Subscript(declassClass(ast.expr, variables, tempName), ast.flags, [declassClass(ast.subs[0], variables, tempName)])
+	elif isinstance(ast, IfExp):
+		return IfExp(declassClass(ast.test, variables, tempName), declassClass(ast.then, variables, tempName), declassClass(ast.else_, variables, tempName))
+	elif isinstance(ast, Return):
+		return Return(declassClass(ast.value, variables, tempName))
+	elif isinstance(ast, Function):
+		return Function(None, ast.name, ast.argnames, [], 0, None, declassClass(ast.code, variables, tempName))
+	elif isinstance(ast, Lambda):
+		return Lambda(ast.argnames, [], 0, declassClass(ast.code, variables, tempName))
+	elif isinstance(ast, If):
+		return If([(declassClass(ast.tests[0][0], variables, tempName), declassClass(ast.tests[0][1], variables, tempName))], declassClass(ast.else_, variables, tempName))
+	elif isinstance(ast, While):
+		return While(declassClass(ast.test, variables, tempName), declassClass(ast.body, variables, tempName), None)
+	else:
+		raise Exception("No AST match: " + str(ast))
+
+def declassify(ast, variables):
 	if isinstance(ast, Module):
-		return Module(None, declassify(ast.node))
+		return Module(None, declassify(ast.node, variables))
 	elif isinstance(ast, Stmt):
 		newStmts = []
 		for statement in ast.nodes:
-			newStmts.append(declassify(statement))
+			ret = declassify(statement, variables)
+			if isinstance(ret, list):
+				newStmts.extend(ret)
+			else:
+				newStmts.append(ret)
 		return Stmt(newStmts)
 	elif isinstance(ast, Printnl):
-		return Printnl([declassify(ast.nodes[0])], ast.dest)
+		return Printnl([declassify(ast.nodes[0], variables)], ast.dest)
 	elif isinstance(ast, Assign):
 		if isinstance(ast.nodes[0], AssAttr):
-			return Discard(CallFunc(GlobalFuncName('set_attr'), [ast.nodes[0].expr, String(ast.nodes[0].attrname), declassify(ast.expr)]))
+			return Discard(CallFunc(GlobalFuncName('set_attr'), [ast.nodes[0].expr, String(ast.nodes[0].attrname), declassify(ast.expr, variables)]))
 		else:
-			return Assign([declassify(ast.nodes[0])], declassify(ast.expr))
+			return Assign([declassify(ast.nodes[0], variables)], declassify(ast.expr, variables))
 	elif isinstance(ast, Discard):
-		return Discard(declassify(ast.expr))
+		return Discard(declassify(ast.expr, variables))
 	elif isinstance(ast, Const):
 		return ast
 	elif isinstance(ast, Name):
@@ -26,49 +107,68 @@ def declassify(ast):
 	elif isinstance(ast, AssName):
 		return ast
 	elif isinstance(ast, Add):
-		return Add((declassify(ast.left), declassify(ast.right)))
+		return Add((declassify(ast.left, variables), declassify(ast.right, variables)))
 	elif isinstance(ast, Compare):
-		return Compare(declassify(ast.expr),[(ast.ops[0][0],declassify(ast.ops[0][1]))])
+		return Compare(declassify(ast.expr, variables),[(ast.ops[0][0],declassify(ast.ops[0][1], variables))])
 	elif isinstance(ast, And):
-		return And([declassify(ast.nodes[0]),declassify(ast.nodes[1])])
+		return And([declassify(ast.nodes[0], variables),declassify(ast.nodes[1], variables)])
 	elif isinstance(ast, Or):
-		return Or([declassify(ast.nodes[0]),declassify(ast.nodes[1])])
+		return Or([declassify(ast.nodes[0], variables),declassify(ast.nodes[1], variables)])
 	elif isinstance(ast, UnarySub):
-		return UnarySub(declassify(ast.expr))
+		return UnarySub(declassify(ast.expr, variables))
 	elif isinstance(ast, Not):
-		return Not(declassify(ast.expr))
+		return Not(declassify(ast.expr, variables))
 	elif isinstance(ast, CallFunc):
-		uniqArgs = []
+		declassArgs = []
+		newVarF = newVariable(variables)
+		needLet = [(newVarF, ast.node)]
 		for arg in ast.args:
-			uniqArgs.append(declassify(arg))
-		return CallFunc(declassify(ast.node), uniqArgs)
+			newArg = declassify(arg, variables)
+			newVar = newVariable(variables)
+			declassArgs.append(newVar)
+			needLet.append((newVar, newArg))
+		Condition = CallFunc(GlobalFuncName("is_class"), [Name(newVarF)])
+		then = CallFunc(GlobalFuncName("create_object"), [Name(newVarF)])
+		else_ = CallFunc(declassify(Name(newVarF), variables), declassArgs)
+		content = IfExp(Condition, then, else_)
+		for elem in needLet:
+			content = Let(Name(elem[0]), elem[1], content)
+		return content
 	elif isinstance(ast, List):
 		newNodes = []
 		for node in ast.nodes:
-			newNodes.append(declassify(node))
+			newNodes.append(declassify(node, variables))
 		return List(newNodes)
 	elif isinstance(ast, Dict):
 		newItems = []
 		for item in ast.items:
-			newItems.append((declassify(item[0]),declassify(item[1])))
+			newItems.append((declassify(item[0], variables),declassify(item[1], variables)))
 		return Dict(newItems)
 	elif isinstance(ast, Subscript):
-		return Subscript(declassify(ast.expr), ast.flags, [declassify(ast.subs[0])])
+		return Subscript(declassify(ast.expr, variables), ast.flags, [declassify(ast.subs[0], variables)])
 	elif isinstance(ast, IfExp):
-		return IfExp(declassify(ast.test), declassify(ast.then), declassify(ast.else_))
+		return IfExp(declassify(ast.test, variables), declassify(ast.then, variables), declassify(ast.else_, variables))
 	elif isinstance(ast, Return):
-		return Return(declassify(ast.value))
+		return Return(declassify(ast.value, variables))
 	elif isinstance(ast, Function):
-		return Function(None, ast.name, ast.argnames, [], 0, None, declassify(ast.code))
+		return Function(None, ast.name, ast.argnames, [], 0, None, declassify(ast.code, variables))
 	elif isinstance(ast, Lambda):
-		return Lambda(ast.argnames, [], 0, declassify(ast.code))
+		return Lambda(ast.argnames, [], 0, declassify(ast.code, variables))
 	elif isinstance(ast, If):
-		return If([(declassify(ast.tests[0][0]), declassify(ast.tests[0][1]))], declassify(ast.else_))
+		return If([(declassify(ast.tests[0][0], variables), declassify(ast.tests[0][1], variables))], declassify(ast.else_, variables))
 	elif isinstance(ast, While):
-		return While(declassify(ast.test), declassify(ast.body), None)
+		return While(declassify(ast.test, variables), declassify(ast.body, variables), None)
 	elif isinstance(ast, Class):
-		return Assign([AssName(ast.name,'OP_ASSIGN')],CallFunc(GlobalFuncName('create_class'), [List([])]))
+		tmp = newVariable(variables)
+		newStmts = []
+		newStmts.append(Assign([AssName(tmp,'OP_ASSIGN')],CallFunc(GlobalFuncName('create_class'), [List([])])))
+		code = declassify(ast.code, variables)
+		code = declassClass(code, variables, tmp)
+		for stmt in code.nodes:
+			newStmts.append(stmt)
+		newStmts.append(Assign([AssName(ast.name,'OP_ASSIGN')],Name(tmp)))
+		return newStmts
 	elif isinstance(ast, Getattr):
-		return CallFunc(GlobalFuncName('get_attr'), [ast.expr, String(ast.attrname)])
+		return CallFunc(GlobalFuncName('get_attr'), [declassify(ast.expr, variables), String(ast.attrname)])
 	else:
 		raise Exception("No AST match: " + str(ast))

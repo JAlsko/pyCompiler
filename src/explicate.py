@@ -124,6 +124,14 @@ def explicate(ast, variables):
 		if isinstance(ret, GlobalFuncName):
 			if ret.name == "input":
 				return InjectFrom(Const(0), CallFunc(explicate(ast.node, variables), newArgs))
+			elif ret.name == "create_class":
+				return InjectFrom(Const(3), CallFunc(explicate(ast.node, variables), newArgs))
+			elif ret.name == "create_object":
+				return InjectFrom(Const(3), CallFunc(explicate(ast.node, variables), newArgs))
+			elif ret.name == "has_attr":
+				return InjectFrom(Const(1), CallFunc(explicate(ast.node, variables), newArgs))
+			elif ret.name == "is_class":
+				return InjectFrom(Const(1), CallFunc(explicate(ast.node, variables), newArgs))
 		return CallFunc(explicate(ast.node, variables), newArgs)
 	elif isinstance(ast, List):
 		newNodes = []
@@ -152,6 +160,8 @@ def explicate(ast, variables):
 	elif isinstance(ast, While):
 		x = newVariable(variables)
 		return While(Let(x, explicate(ast.test, variables), getBool(x, variables)), explicate(ast.body, variables), None)
+	elif isinstance(ast, Let):
+		return Let(explicate(ast.var, variables), explicate(ast.rhs, variables), explicate(ast.body, variables))
 	elif isinstance(ast, GlobalFuncName):
 		return ast
 	else:

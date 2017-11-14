@@ -1,4 +1,5 @@
 class C:
-	0
-C.x = 3
-print C.x
+	class D:
+		x = 3
+	print D.x
+print C.D.x

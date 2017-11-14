@@ -36,7 +36,7 @@ def main():
 				print structs.astReadable(ast)
 			else:
 				print ast
-		declassAst = declass.declassify(ast)
+		declassAst = declass.declassify(ast, [])
 		if '-declassast' in sys.argv or '-all' in sys.argv:
 			print "-----------declassAst------------"
 			if '-longast' in sys.argv:
@@ -77,7 +77,7 @@ def main():
 			if '-longast' in sys.argv:
 				print structs.astReadable(noStringAst)
 			else:
-				print structs.dictToStr(noStringAst)
+				print noStringAst
 		functions = close.closureWrapper(noStringAst)
 		if '-closure' in sys.argv or '-all' in sys.argv:
 			print "------------functions------------"
@@ -132,7 +132,7 @@ def main():
 				print func + ":-------------ifFlat--------------"
 				print structs.printLinkedList(finalFlatAssem)
 			funcAssem[func] = finalFlatAssem
-		printAssem.createAssembly(sys.argv[1][:-2] + "s", funcAssem, nodeGraph, numColors)
+		printAssem.createAssembly(sys.argv[1][:-2] + "s", funcAssem, nodeGraph, numColors, strings)
 
 		
 main()

@@ -84,6 +84,7 @@ def determineHeapify(ast):
 			ret = ret | determineHeapify(node)
 		return ret
 	elif isinstance(ast, Assign):
+		print ast
 		return determineHeapify(ast.expr)
 	elif isinstance(ast, Discard):
 		return determineHeapify(ast.expr)

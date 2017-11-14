@@ -91,6 +91,10 @@ def uniquifySearch(ast, variables):
 	elif isinstance(ast, While):
 		uniquifySearch(ast.test, variables)
 		uniquifySearch(ast.body, variables)
+	elif isinstance(ast, Let):
+		uniquifySearch(ast.var, variables)
+		uniquifySearch(ast.rhs, variables)
+		uniquifySearch(ast.body, variables)
 	elif isinstance(ast, GlobalFuncName):
 		pass
 	else:
@@ -176,6 +180,8 @@ def uniquify(ast, variables):
 		return If([(uniquify(ast.tests[0][0], variables), uniquify(ast.tests[0][1], variables))], uniquify(ast.else_, variables))
 	elif isinstance(ast, While):
 		return While(uniquify(ast.test, variables), uniquify(ast.body, variables), None)
+	elif isinstance(ast, Let):
+		return Let(uniquify(ast.var, variables), uniquify(ast.rhs, variables), uniquify(ast.body, variables))
 	elif isinstance(ast, GlobalFuncName):
 		return ast
 	else:
