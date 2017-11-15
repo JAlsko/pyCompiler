@@ -68,10 +68,8 @@ def declassClass(ast, variables, tempName):
 		return IfExp(declassClass(ast.test, variables, tempName), declassClass(ast.then, variables, tempName), declassClass(ast.else_, variables, tempName))
 	elif isinstance(ast, Return):
 		return Return(declassClass(ast.value, variables, tempName))
-	elif isinstance(ast, Function):
-		return Function(None, ast.name, ast.argnames, [], 0, None, declassClass(ast.code, variables, tempName))
 	elif isinstance(ast, Lambda):
-		return Lambda(ast.argnames, [], 0, declassClass(ast.code, variables, tempName))
+		return Lambda(ast.argnames, [], 0, ast.code)
 	elif isinstance(ast, If):
 		return If([(declassClass(ast.tests[0][0], variables, tempName), declassClass(ast.tests[0][1], variables, tempName))], declassClass(ast.else_, variables, tempName))
 	elif isinstance(ast, While):
@@ -119,21 +117,32 @@ def declassify(ast, variables):
 	elif isinstance(ast, Not):
 		return Not(declassify(ast.expr, variables))
 	elif isinstance(ast, CallFunc):
-		declassArgs = []
-		newVarF = newVariable(variables)
-		needLet = [(newVarF, ast.node)]
-		for arg in ast.args:
-			newArg = declassify(arg, variables)
-			newVar = newVariable(variables)
-			declassArgs.append(newVar)
-			needLet.append((newVar, newArg))
-		Condition = CallFunc(GlobalFuncName("is_class"), [Name(newVarF)])
-		then = CallFunc(GlobalFuncName("create_object"), [Name(newVarF)])
-		else_ = CallFunc(declassify(Name(newVarF), variables), declassArgs)
-		content = IfExp(Condition, then, else_)
-		for elem in needLet:
-			content = Let(Name(elem[0]), elem[1], content)
-		return content
+		if not (isinstance(ast.node, Name) and ast.node.name == 'input'):
+			declassArgs = []
+			newVarF = newVariable(variables)
+			needLet = [(newVarF, declassify(ast.node, variables))]
+			for arg in ast.args:
+				newArg = declassify(arg, variables)
+				newVar = newVariable(variables)
+				declassArgs.append(Name(newVar))
+				needLet.append((newVar, newArg))
+			Condition = CallFunc(GlobalFuncName("is_class"), [Name(newVarF)])
+			then = CallFunc(GlobalFuncName("create_object"), [Name(newVarF)])
+			Condition2 = CallFunc(GlobalFuncName("is_bound_method"), [Name(newVarF)])
+			bound_arg_list = [CallFunc(GlobalFuncName("get_receiver"), [Name(newVarF)])]
+			bound_arg_list.extend(declassArgs)
+			then2 = CallFunc(CallFunc(GlobalFuncName("get_function"), [Name(newVarF)]), bound_arg_list)
+			Condition3 = CallFunc(GlobalFuncName("is_unbound_method"), [Name(newVarF)])
+			then3 = CallFunc(CallFunc(GlobalFuncName("get_function"), [Name(newVarF)]), declassArgs)
+			else3 = CallFunc(declassify(Name(newVarF), variables), declassArgs)
+			else2 = IfExp(Condition3, then3, else3)
+			else1 = IfExp(Condition2, then2, else2)
+			content = IfExp(Condition, then, else1)
+			for elem in needLet:
+				content = Let(Name(elem[0]), elem[1], content)
+			return content
+		else:
+			return ast
 	elif isinstance(ast, List):
 		newNodes = []
 		for node in ast.nodes:
@@ -151,9 +160,11 @@ def declassify(ast, variables):
 	elif isinstance(ast, Return):
 		return Return(declassify(ast.value, variables))
 	elif isinstance(ast, Function):
-		return Function(None, ast.name, ast.argnames, [], 0, None, declassify(ast.code, variables))
+		#return Function(None, ast.name, ast.argnames, [], 0, None, declassify(ast.code, variables))
+		return Assign([AssName(ast.name, 'OP_ASSIGN')],Lambda(ast.argnames, ast.defaults, ast.flags, declassify(ast.code, variables)))
 	elif isinstance(ast, Lambda):
-		return Lambda(ast.argnames, [], 0, declassify(ast.code, variables))
+		#return Lambda(ast.argnames, [], 0, declassify(ast.code, variables))
+		return Lambda(ast.argnames, ast.defaults, ast.flags, Stmt([Return(declassify(ast.code, variables))]))
 	elif isinstance(ast, If):
 		return If([(declassify(ast.tests[0][0], variables), declassify(ast.tests[0][1], variables))], declassify(ast.else_, variables))
 	elif isinstance(ast, While):

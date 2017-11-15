@@ -128,9 +128,17 @@ def explicate(ast, variables):
 				return InjectFrom(Const(3), CallFunc(explicate(ast.node, variables), newArgs))
 			elif ret.name == "create_object":
 				return InjectFrom(Const(3), CallFunc(explicate(ast.node, variables), newArgs))
+			elif ret.name == "get_receiver":
+				return InjectFrom(Const(3), CallFunc(explicate(ast.node, variables), newArgs))
+			elif ret.name == "get_function":
+				return InjectFrom(Const(3), CallFunc(explicate(ast.node, variables), newArgs))
 			elif ret.name == "has_attr":
 				return InjectFrom(Const(1), CallFunc(explicate(ast.node, variables), newArgs))
 			elif ret.name == "is_class":
+				return InjectFrom(Const(1), CallFunc(explicate(ast.node, variables), newArgs))
+			elif ret.name == "is_bound_method":
+				return InjectFrom(Const(1), CallFunc(explicate(ast.node, variables), newArgs))
+			elif ret.name == "is_unbound_method":
 				return InjectFrom(Const(1), CallFunc(explicate(ast.node, variables), newArgs))
 		return CallFunc(explicate(ast.node, variables), newArgs)
 	elif isinstance(ast, List):
@@ -152,9 +160,7 @@ def explicate(ast, variables):
 	elif isinstance(ast, Return):
 		return Return(explicate(ast.value, variables))
 	elif isinstance(ast, Lambda):
-		return Lambda(ast.argnames, ast.defaults, ast.flags, Stmt([Return(explicate(ast.code, variables))]))
-	elif isinstance(ast, Function):
-		return Assign([AssName(ast.name, 'OP_ASSIGN')],Lambda(ast.argnames, ast.defaults, ast.flags, explicate(ast.code, variables)))
+		return Lambda(ast.argnames, ast.defaults, ast.flags, explicate(ast.code, variables))
 	elif isinstance(ast, If):
 		return If([(explicate(ast.tests[0][0], variables), explicate(ast.tests[0][1], variables))], explicate(ast.else_, variables))
 	elif isinstance(ast, While):
