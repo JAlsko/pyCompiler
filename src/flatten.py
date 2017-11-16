@@ -13,7 +13,7 @@ def newVariable(variables, name):
 	return ret
 
 def flattenRecurs(ast, variables):
-	#print str(ast)
+	print str(ast)
 	#print ""
 	if isinstance(ast, Lambda):
 		new_args = []
@@ -338,7 +338,8 @@ def flattenRecurs(ast, variables):
 			else:
 				last = structs.getLast(first)
 				last.next = result[0]
-				result[0].prev = last
+				if result[0] != None:
+					result[0].prev = last
 
 			result = flattenRecurs(item[0], variables)
 			dictElem[result[1]] = elem
@@ -347,7 +348,8 @@ def flattenRecurs(ast, variables):
 			else:
 				last = structs.getLast(first)
 				last.next = result[0]
-				result[0].prev = last
+				if result[0] != None:
+					result[0].prev = last
 		output = newVariable(variables, None)
 		tmp = newVariable(variables, None)
 		dictNode = structs.flatNode("CallFunc", None, None, tmp, GlobalFuncName("create_dict"), [])
