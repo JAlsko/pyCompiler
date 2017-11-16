@@ -5,5 +5,6 @@ class C:
 		print x
 		print self.x
 		print self.y
+		self.z = x
 o = C()
 o.f(1)

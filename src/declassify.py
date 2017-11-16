@@ -127,7 +127,12 @@ def declassify(ast, variables):
 				declassArgs.append(Name(newVar))
 				needLet.append((newVar, newArg))
 			Condition = CallFunc(GlobalFuncName("is_class"), [Name(newVarF)])
-			then = CallFunc(GlobalFuncName("create_object"), [Name(newVarF)])
+			newVar = newVariable(variables)
+			condition0 = CallFunc(GlobalFuncName('has_attr'), [Name(newVarF), String("__init__")])
+			then0 = Let(Name("dummy"), CallFunc(CallFunc(GlobalFuncName("get_function"), [CallFunc(GlobalFuncName("get_attr"), [Name(newVarF), String('__init__')])]), [Name(newVar)] + declassArgs), Name(newVar))
+			else0 = Name(newVar)
+			class_create_content = IfExp(condition0, then0, else0)
+			then = Let(Name(newVar), CallFunc(GlobalFuncName("create_object"), [Name(newVarF)]), class_create_content)
 			Condition2 = CallFunc(GlobalFuncName("is_bound_method"), [Name(newVarF)])
 			bound_arg_list = [CallFunc(GlobalFuncName("get_receiver"), [Name(newVarF)])]
 			bound_arg_list.extend(declassArgs)
